@@ -16,7 +16,8 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Wed
             ?? "Host=localhost;Database=weddingbooking;Username=postgres;Password=postgres";
 
         var options = new DbContextOptionsBuilder<WeddingBookingDbContext>()
-            .UseNpgsql(connectionString)
+            .UseNpgsql(connectionString, npgsql =>
+                npgsql.MigrationsHistoryTable("__EFMigrationsHistory", PersistenceRegistration.Schema))
             .Options;
 
         return new WeddingBookingDbContext(options);

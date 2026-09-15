@@ -46,6 +46,7 @@ In Azure they are App Service application settings or Key Vault references. `app
 - **`Gæsteantal` exists once**, on the Booking. Everything per-guest reads it.
 - **Access control lives in the API, in one place.** Not in React, not in Postgres row policies — ADR-0002.
 - **Trello is written to, never read** — ADR-0006.
+- **Never create a table in `public`.** Supabase serves that schema to the browser. Everything of ours lives in `app` — see this repo's ADR-0001.
 
 ## What belongs here, and what belongs in the frontend
 

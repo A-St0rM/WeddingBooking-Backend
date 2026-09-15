@@ -11,8 +11,12 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "app");
+
             migrationBuilder.CreateTable(
                 name: "bookinger",
+                schema: "app",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -28,6 +32,7 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_bookinger_bryllupsdato",
+                schema: "app",
                 table: "bookinger",
                 column: "bryllupsdato");
         }
@@ -36,7 +41,8 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "bookinger");
+                name: "bookinger",
+                schema: "app");
         }
     }
 }

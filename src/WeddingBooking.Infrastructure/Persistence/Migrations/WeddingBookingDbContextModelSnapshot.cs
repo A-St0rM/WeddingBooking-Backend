@@ -17,6 +17,7 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("app")
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -50,7 +51,7 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Bryllupsdato");
 
-                    b.ToTable("bookinger", (string)null);
+                    b.ToTable("bookinger", "app");
                 });
 #pragma warning restore 612, 618
         }
