@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using WeddingBooking.Api.Configuration;
+using WeddingBooking.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services
     .Configure<TrelloOptions>(builder.Configuration.GetSection(TrelloOptions.SectionName))
     .Configure<SupabaseOptions>(builder.Configuration.GetSection(SupabaseOptions.SectionName))
     .Configure<OpenAiOptions>(builder.Configuration.GetSection(OpenAiOptions.SectionName));
+
+builder.Services.AddPersistence(builder.Configuration.GetConnectionString("Postgres"));
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
