@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WeddingBooking.Api/WeddingBooking.Api.csproj" />
+    <Project Path="src/WeddingBooking.Domain/WeddingBooking.Domain.csproj" />
+    <Project Path="src/WeddingBooking.Infrastructure/WeddingBooking.Infrastructure.csproj" />
+    <Project Path="src/WeddingBooking.Integrations/WeddingBooking.Integrations.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WeddingBooking.Api.Tests/WeddingBooking.Api.Tests.csproj" />
+    <Project Path="tests/WeddingBooking.Domain.Tests/WeddingBooking.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
