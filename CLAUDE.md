@@ -46,3 +46,36 @@ In Azure they are App Service application settings or Key Vault references. `app
 - **`Gæsteantal` exists once**, on the Booking. Everything per-guest reads it.
 - **Access control lives in the API, in one place.** Not in React, not in Postgres row policies — ADR-0002.
 - **Trello is written to, never read** — ADR-0006.
+
+## What belongs here, and what belongs in the frontend
+
+The split is by *responsibility*, not by convenience. The canonical version of this table is in `../WeddingBooking/ARCHITECTURE.md`.
+
+| Concern | Lives in |
+|---|---|
+| Pricing, status derivation, any calculation over money | **Backend** — `Domain`. Never duplicated in the frontend. |
+| Access control | **Backend** — `Api`, in one place |
+| Database schema and migrations | **Backend** — `Infrastructure` |
+| e-conomic, Trello, mail drafts, summarisation | **Backend** — `Integrations` |
+| Document generation (Aftalebekræftelse → PDF) | **Backend** |
+| Routing, forms, layout, responsiveness | **Frontend** |
+| Danish UI text | **Frontend** |
+| Glossary, ADRs, specs, tickets | **Frontend repo**, as documentation only |
+
+The test for a disputed piece: **if getting it wrong would produce a wrong number or leak data, it belongs here.** The frontend renders what this API tells it and calculates nothing of consequence.
+
+A change that needs both repos is still **one ticket**, with a `Repos:` line naming both.
+
+## Agent skills
+
+### Issue tracker
+
+One tracker for both repos, in the sibling frontend repo at `../WeddingBooking/.scratch/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical roles, each label string equal to its name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Shared with the frontend repo: glossary and cross-cutting ADRs live in `../WeddingBooking/`; `docs/adr/` here is backend-only. See `docs/agents/domain.md`.
