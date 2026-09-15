@@ -11,13 +11,21 @@ namespace WeddingBooking.Api.Tests.Fixtures;
 /// primary seam: no service is replaced, no repository is mocked. What the tests
 /// exercise is what runs in production.
 /// </summary>
+/// <remarks>
+/// Nothing here touches the database. Migrating in <c>InitializeAsync</c> would
+/// make an unreachable database fail every test in the class, including the ones
+/// that never query it — which is how a network problem comes to look like a
+/// broken validation rule. Only <see cref="ResetAsync"/> connects, and only the
+/// tests that need data call it.
+/// </remarks>
 public sealed class ApiFixture : IAsyncLifetime
 {
     private WebApplicationFactory<Program>? factory;
+    private bool migrated;
 
     public HttpClient Client { get; private set; } = default!;
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
         factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
@@ -29,28 +37,28 @@ public sealed class ApiFixture : IAsyncLifetime
         });
 
         Client = factory.CreateClient();
-
-        if (!TestDatabase.IsConfigured)
-        {
-            return;
-        }
-
-        await using var scope = factory.Services.CreateAsyncScope();
-        var database = scope.ServiceProvider.GetRequiredService<WeddingBookingDbContext>();
-        await database.Database.MigrateAsync();
+        return Task.CompletedTask;
     }
 
     /// Each test starts from an empty table; tests must not depend on each other.
     public async Task ResetAsync()
     {
-        if (!TestDatabase.IsConfigured || factory is null)
+        if (factory is null)
         {
-            return;
+            throw new InvalidOperationException("Fixture not initialised.");
         }
 
         await using var scope = factory.Services.CreateAsyncScope();
         var database = scope.ServiceProvider.GetRequiredService<WeddingBookingDbContext>();
-        await database.Database.ExecuteSqlRawAsync("TRUNCATE TABLE bookinger");
+
+        if (!migrated)
+        {
+            await database.Database.MigrateAsync();
+            migrated = true;
+        }
+
+        await database.Database.ExecuteSqlRawAsync(
+            $"TRUNCATE TABLE {PersistenceRegistration.Schema}.bookinger");
     }
 
     public Task DisposeAsync()
