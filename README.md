@@ -39,6 +39,35 @@ dotnet test
 
 Without that variable the database-backed tests **skip** rather than pass, and say so by name. A green run with skips is not a green run.
 
+## Deploy to Azure
+
+One script deploys both repos. It is idempotent — run it again to redeploy.
+
+```bash
+brew install azure-cli    # once
+az login                  # once
+
+export WEDDINGBOOKING_POSTGRES='Host=aws-1-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.<ref>;Password=...;SSL Mode=Require;Trust Server Certificate=true'
+export WEDDINGBOOKING_SUPABASE='https://<ref>.supabase.co'
+
+./infra/deploy.sh
+```
+
+It creates the resource group, applies `infra/main.bicep`, publishes the API, builds the frontend against the API's real hostname, publishes it to Static Web Apps, and then polls `/health` until the API answers.
+
+**No secret is ever written to a file.** The connection string is a `@secure()` Bicep parameter and ends up only in App Service application settings.
+
+What it creates:
+
+| Resource | Why |
+|---|---|
+| App Service (Linux, B1) | The API. B1 rather than the free F1 because F1 sleeps and is capped at 60 CPU-minutes a day — fine until the morning of a demo. Override with `appServiceSku=F1` if the cost matters more. |
+| Static Web App (Free) | The frontend. Free tier is genuinely enough here. |
+
+CORS is wired automatically: Bicep hands the API the frontend's hostname, so the two know about each other without anyone copying a URL.
+
+The schema is **not** applied by the deployment — see the migration note above. Applying schema changes stays a decision someone makes.
+
 ## Connecting to Supabase
 
 Use the **session pooler**, not the direct host:

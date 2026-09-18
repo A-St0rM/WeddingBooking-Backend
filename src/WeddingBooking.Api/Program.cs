@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using WeddingBooking.Api.Configuration;
 using WeddingBooking.Infrastructure.Persistence;
@@ -48,7 +49,19 @@ builder.Services.AddCors(options => options.AddPolicy(FrontendCorsPolicy, policy
     .AllowAnyHeader()
     .AllowAnyMethod()));
 
+// App Service terminates TLS and forwards the request over plain HTTP. Without
+// this the app believes every request is insecure, and UseHttpsRedirection
+// answers with a redirect to a URL the client already asked for — a loop.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {

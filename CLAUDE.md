@@ -30,6 +30,10 @@ Those two are the only seams. No repository tests, no controller unit tests with
 
 `Integrations:{Economic,Trello,Mail,Summarisation}` selects `Fake` or `Real` per integration. The fakes are how the whole system runs for a demo with no credentials — not test scaffolding. Never branch on environment inside a real adapter; add a fake instead.
 
+## Deployment
+
+`infra/main.bicep` provisions everything; `infra/deploy.sh` is the entire procedure for both repos. There is no portal-clicking runbook, and there should never be one — if a deployment step cannot be expressed in those two files, that is the bug.
+
 ## Configuration
 
 `appsettings.json` documents the shape of every setting and contains **no secrets in any environment**. Locally, secrets go in user-secrets:
