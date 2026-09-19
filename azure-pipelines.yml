@@ -1,0 +1,46 @@
+# Deploys the API to App Service on every push to main.
+#
+# Set these pipeline variables once (Pipelines -> Edit -> Variables):
+#   azureServiceConnection   name of the Azure Resource Manager service connection
+#   webAppName               the App Service name, e.g. weddingbooking-api
+#
+# Application settings — the connection string and the rest — live in App
+# Service, not here. Nothing secret belongs in this file.
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+
+steps:
+  - task: UseDotNet@2
+    displayName: .NET 10 SDK
+    inputs:
+      packageType: sdk
+      version: '10.0.x'
+
+  # publishWebProjects defaults to true and would pick up every project in the
+  # solution. This repo has four, plus two test projects; naming the API
+  # explicitly is what stops the wrong one being deployed.
+  - task: DotNetCoreCLI@2
+    displayName: Publish the API
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: src/WeddingBooking.Api/WeddingBooking.Api.csproj
+      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: true
+
+  - task: AzureWebApp@1
+    displayName: Deploy to App Service
+    inputs:
+      azureSubscription: $(azureServiceConnection)
+      appType: webAppLinux
+      appName: $(webAppName)
+      package: $(Build.ArtifactStagingDirectory)/**/*.zip
