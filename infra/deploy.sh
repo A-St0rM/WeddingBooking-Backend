@@ -45,14 +45,16 @@ echo "    Frontend: $frontend_url"
 
 echo "==> Publishing the API"
 publish_dir=$(mktemp -d)
+zip_path=$(mktemp -t weddingbooking-api).zip
 dotnet publish "$BACKEND_DIR/src/WeddingBooking.Api" -c Release -o "$publish_dir" --nologo -v q
-(cd "$publish_dir" && zip -qr "$publish_dir/api.zip" . -x 'api.zip')
+# The archive is written outside the directory being archived, or it ends up inside itself.
+(cd "$publish_dir" && zip -qr "$zip_path" .)
 az webapp deploy \
   --resource-group "$RESOURCE_GROUP" \
   --name "$api_name" \
-  --src-path "$publish_dir/api.zip" \
+  --src-path "$zip_path" \
   --type zip --output none
-rm -rf "$publish_dir"
+rm -rf "$publish_dir" "$zip_path"
 
 echo "==> Building the frontend against $api_url"
 (cd "$FRONTEND_DIR" && VITE_API_BASE_URL="$api_url" npm run build)
