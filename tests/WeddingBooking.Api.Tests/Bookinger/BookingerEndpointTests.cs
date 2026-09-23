@@ -80,14 +80,18 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
         ukendt.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    /// <remarks>Runs without a database: rejected before anything is saved.</remarks>
+    /// <remarks>
+    /// Runs without a database: the call never reaches one. Since ticket 03 every
+    /// endpoint requires a signed-in caller, so an anonymous request is turned away
+    /// before any of it is considered — including whether the payload makes sense.
+    /// </remarks>
     [Fact]
-    public async Task Et_negativt_gaesteantal_afvises()
+    public async Task Et_anonymt_kald_afvises()
     {
         var svar = await api.Client.PostAsJsonAsync(
             "/api/bookinger", new OpretBookingRequest("Anna & Mikkel", null, -5));
 
-        svar.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        svar.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     private async Task<BookingResponse> OpretAsync(OpretBookingRequest request)

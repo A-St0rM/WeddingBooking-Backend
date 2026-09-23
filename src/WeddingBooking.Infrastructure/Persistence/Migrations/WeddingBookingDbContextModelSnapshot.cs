@@ -53,6 +53,53 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
                     b.ToTable("bookinger", "app");
                 });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Brugere.Bruger", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AuthBrugerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("auth_bruger_id");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Navn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("navn");
+
+                    b.Property<DateTimeOffset>("Oprettet")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("oprettet");
+
+                    b.Property<string>("Rolle")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("rolle");
+
+                    b.Property<DateTimeOffset?>("SidsteLogin")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sidste_login");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthBrugerId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("brugere", "app");
+                });
 #pragma warning restore 612, 618
         }
     }
