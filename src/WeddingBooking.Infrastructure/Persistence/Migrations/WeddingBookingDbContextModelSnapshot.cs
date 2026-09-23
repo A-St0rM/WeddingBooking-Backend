@@ -30,6 +30,10 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid>("BetalerKundeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("betaler_kunde_id");
+
                     b.Property<DateOnly?>("Bryllupsdato")
                         .HasColumnType("date")
                         .HasColumnName("bryllupsdato");
@@ -38,10 +42,9 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("gaesteantal");
 
-                    b.Property<string>("Kundenavn")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("kundenavn");
+                    b.Property<Guid>("KundeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("kunde_id");
 
                     b.Property<DateTimeOffset>("Oprettet")
                         .HasColumnType("timestamp with time zone")
@@ -49,7 +52,11 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BetalerKundeId");
+
                     b.HasIndex("Bryllupsdato");
+
+                    b.HasIndex("KundeId");
 
                     b.ToTable("bookinger", "app");
                 });
@@ -99,6 +106,116 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("brugere", "app");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Kunder.Kontaktperson", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("ErPrimær")
+                        .HasColumnType("boolean")
+                        .HasColumnName("er_primaer");
+
+                    b.Property<Guid>("KundeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("kunde_id");
+
+                    b.Property<string>("Navn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("navn");
+
+                    b.Property<string>("Telefon")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("telefon");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KundeId");
+
+                    b.ToTable("kontaktpersoner", "app");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Kunder.Kunde", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Adresse")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("adresse");
+
+                    b.Property<string>("By")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("by");
+
+                    b.Property<int?>("EconomicCustomerNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("economic_customer_number");
+
+                    b.Property<string>("Navn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("navn");
+
+                    b.Property<DateTimeOffset>("Oprettet")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("oprettet");
+
+                    b.Property<string>("Postnr")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("postnr");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Navn");
+
+                    b.ToTable("kunder", "app");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Bookinger.Booking", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Kunder.Kunde", null)
+                        .WithMany()
+                        .HasForeignKey("BetalerKundeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WeddingBooking.Domain.Kunder.Kunde", null)
+                        .WithMany()
+                        .HasForeignKey("KundeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Kunder.Kontaktperson", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Kunder.Kunde", null)
+                        .WithMany("Kontaktpersoner")
+                        .HasForeignKey("KundeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Kunder.Kunde", b =>
+                {
+                    b.Navigation("Kontaktpersoner");
                 });
 #pragma warning restore 612, 618
         }
