@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WeddingBooking.Domain.Bookinger;
+using WeddingBooking.Domain.Brugere;
 
 namespace WeddingBooking.Infrastructure.Persistence;
 
@@ -7,6 +8,7 @@ public sealed class WeddingBookingDbContext(DbContextOptions<WeddingBookingDbCon
     : DbContext(options)
 {
     public DbSet<Booking> Bookinger => Set<Booking>();
+    public DbSet<Bruger> Brugere => Set<Bruger>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

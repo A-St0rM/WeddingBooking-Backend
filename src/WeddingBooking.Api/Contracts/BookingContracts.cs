@@ -15,3 +15,9 @@ public sealed record BookingResponse(
     DateOnly? Bryllupsdato,
     int? Gæsteantal,
     DateTimeOffset Oprettet);
+
+public sealed record MigResponse(
+    Guid Id,
+    string Navn,
+    string Email,
+    string Rolle);
