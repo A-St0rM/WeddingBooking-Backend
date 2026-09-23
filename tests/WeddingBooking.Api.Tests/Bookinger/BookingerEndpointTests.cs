@@ -13,8 +13,7 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
     {
         await api.ResetAsync();
 
-        var oprettet = await OpretAsync(new OpretBookingRequest(
-            "Anna Nielsen & Mikkel Sørensen", new DateOnly(2027, 8, 14), 94));
+        var oprettet = await OpretAsync(new OpretBookingRequest(null, "Anna Nielsen & Mikkel Sørensen", new DateOnly(2027, 8, 14), 94));
 
         var listen = await HentListenAsync();
 
@@ -30,7 +29,7 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
     {
         await api.ResetAsync();
 
-        var oprettet = await OpretAsync(new OpretBookingRequest("Anna & Mikkel", null, null));
+        var oprettet = await OpretAsync(new OpretBookingRequest(null, "Anna & Mikkel", null, null));
 
         oprettet.Bryllupsdato.ShouldBeNull();
         oprettet.Gæsteantal.ShouldBeNull();
@@ -42,9 +41,9 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
     {
         await api.ResetAsync();
 
-        await OpretAsync(new OpretBookingRequest("Uden dato", null, null));
-        await OpretAsync(new OpretBookingRequest("Sidst", new DateOnly(2027, 9, 4), 80));
-        await OpretAsync(new OpretBookingRequest("Først", new DateOnly(2026, 5, 30), 110));
+        await OpretAsync(new OpretBookingRequest(null, "Uden dato", null, null));
+        await OpretAsync(new OpretBookingRequest(null, "Sidst", new DateOnly(2027, 9, 4), 80));
+        await OpretAsync(new OpretBookingRequest(null, "Først", new DateOnly(2026, 5, 30), 110));
 
         var listen = await HentListenAsync();
 
@@ -57,8 +56,8 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
         await api.ResetAsync();
 
         var optagetDato = new DateOnly(2027, 8, 14);
-        await OpretAsync(new OpretBookingRequest("Allerede booket", optagetDato, 80));
-        await OpretAsync(new OpretBookingRequest("En anden dag", new DateOnly(2027, 8, 21), 80));
+        await OpretAsync(new OpretBookingRequest(null, "Allerede booket", optagetDato, 80));
+        await OpretAsync(new OpretBookingRequest(null, "En anden dag", new DateOnly(2027, 8, 21), 80));
 
         var paaDatoen = await HentListenAsync($"?bryllupsdato={optagetDato:yyyy-MM-dd}");
 
@@ -71,7 +70,7 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
     {
         await api.ResetAsync();
 
-        var oprettet = await OpretAsync(new OpretBookingRequest("Anna & Mikkel", null, 80));
+        var oprettet = await OpretAsync(new OpretBookingRequest(null, "Anna & Mikkel", null, 80));
 
         var fundet = await api.Client.GetFromJsonAsync<BookingResponse>($"/api/bookinger/{oprettet.Id}");
         fundet!.Id.ShouldBe(oprettet.Id);
@@ -89,7 +88,7 @@ public sealed class BookingerEndpointTests(ApiFixture api) : IClassFixture<ApiFi
     public async Task Et_anonymt_kald_afvises()
     {
         var svar = await api.Client.PostAsJsonAsync(
-            "/api/bookinger", new OpretBookingRequest("Anna & Mikkel", null, -5));
+            "/api/bookinger", new OpretBookingRequest(null, "Anna & Mikkel", null, -5));
 
         svar.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using WeddingBooking.Domain.Bookinger;
+using WeddingBooking.Domain.Kunder;
 
 namespace WeddingBooking.Infrastructure.Persistence.Configurations;
 
@@ -19,9 +20,21 @@ public sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasKey(booking => booking.Id);
         builder.Property(booking => booking.Id).HasColumnName("id");
 
-        builder.Property(booking => booking.Kundenavn)
-            .HasColumnName("kundenavn")
-            .HasMaxLength(200);
+        builder.Property(booking => booking.KundeId).HasColumnName("kunde_id");
+        builder.Property(booking => booking.BetalerKundeId).HasColumnName("betaler_kunde_id");
+
+        builder.HasOne<Kunde>()
+            .WithMany()
+            .HasForeignKey(booking => booking.KundeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // The payer is a Kunde too — usually the same one, sometimes the parents.
+        builder.HasOne<Kunde>()
+            .WithMany()
+            .HasForeignKey(booking => booking.BetalerKundeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(booking => booking.KundeId);
 
         builder.Property(booking => booking.Bryllupsdato)
             .HasColumnName("bryllupsdato");

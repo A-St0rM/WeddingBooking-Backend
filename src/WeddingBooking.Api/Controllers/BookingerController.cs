@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WeddingBooking.Api.Contracts;
 using WeddingBooking.Domain.Bookinger;
+using WeddingBooking.Domain.Kunder;
 using WeddingBooking.Infrastructure.Persistence;
 
 namespace WeddingBooking.Api.Controllers;
@@ -18,36 +19,42 @@ public sealed class BookingerController(WeddingBookingDbContext database) : Cont
     /// When given, returns only Bookings on that date. The create form calls this
     /// to warn before two weddings land on the same Saturday.
     /// </param>
+    /// <param name="søg">Matches the couple's name — how a caller is found when they give no date.</param>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<BookingResponse>>> Hent(
         [FromQuery] DateOnly? bryllupsdato,
+        [FromQuery] string? søg,
         CancellationToken cancellationToken)
     {
-        var query = database.Bookinger.AsNoTracking();
+        var query = Grundforespørgsel();
 
         if (bryllupsdato is not null)
         {
-            query = query.Where(booking => booking.Bryllupsdato == bryllupsdato);
+            query = query.Where(række => række.Booking.Bryllupsdato == bryllupsdato);
+        }
+
+        if (!string.IsNullOrWhiteSpace(søg))
+        {
+            var mønster = $"%{søg.Trim()}%";
+            query = query.Where(række => EF.Functions.ILike(række.Kundenavn, mønster));
         }
 
         var bookinger = await query
-            .OrderBy(booking => booking.Bryllupsdato == null)
-            .ThenBy(booking => booking.Bryllupsdato)
-            .ThenBy(booking => booking.Oprettet)
-            .Select(booking => Map(booking))
+            .OrderBy(række => række.Booking.Bryllupsdato == null)
+            .ThenBy(række => række.Booking.Bryllupsdato)
+            .ThenBy(række => række.Booking.Oprettet)
             .ToListAsync(cancellationToken);
 
-        return Ok(bookinger);
+        return Ok(bookinger.Select(Map).ToList());
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<BookingResponse>> HentEn(Guid id, CancellationToken cancellationToken)
     {
-        var booking = await database.Bookinger
-            .AsNoTracking()
-            .FirstOrDefaultAsync(booking => booking.Id == id, cancellationToken);
+        var række = await Grundforespørgsel()
+            .FirstOrDefaultAsync(r => r.Booking.Id == id, cancellationToken);
 
-        return booking is null ? NotFound() : Ok(Map(booking));
+        return række is null ? NotFound() : Ok(Map(række));
     }
 
     [HttpPost]
@@ -61,18 +68,100 @@ public sealed class BookingerController(WeddingBookingDbContext database) : Cont
             return ValidationProblem(ModelState);
         }
 
-        var booking = Booking.Create(request.Kundenavn, request.Bryllupsdato, request.Gæsteantal);
+        var kunde = await FindEllerOpretKunde(request, cancellationToken);
+        if (kunde is null)
+        {
+            ModelState.AddModelError(nameof(request.KundeId),
+                "Angiv enten en eksisterende kunde eller et navn på en ny.");
+            return ValidationProblem(ModelState);
+        }
 
+        var booking = Booking.Create(kunde.Id, request.Bryllupsdato, request.Gæsteantal);
         database.Bookinger.Add(booking);
         await database.SaveChangesAsync(cancellationToken);
 
-        return CreatedAtAction(nameof(HentEn), new { id = booking.Id }, Map(booking));
+        return CreatedAtAction(nameof(HentEn), new { id = booking.Id },
+            Mapning.TilResponse(booking, kunde.Navn, kunde.Navn));
     }
 
-    private static BookingResponse Map(Booking booking) => new(
-        booking.Id,
-        booking.Kundenavn,
-        booking.Bryllupsdato,
-        booking.Gæsteantal,
-        booking.Oprettet);
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<BookingResponse>> Ret(
+        Guid id, RetBookingRequest request, CancellationToken cancellationToken)
+    {
+        if (!Booking.ErGyldigtGæsteantal(request.Gæsteantal))
+        {
+            ModelState.AddModelError(nameof(request.Gæsteantal), Booking.UgyldigtGæsteantal);
+            return ValidationProblem(ModelState);
+        }
+
+        var booking = await database.Bookinger.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+        if (booking is null) return NotFound();
+
+        booking.SætBryllupsdato(request.Bryllupsdato);
+        booking.SætGæsteantal(request.Gæsteantal);
+        await database.SaveChangesAsync(cancellationToken);
+
+        return await HentEn(id, cancellationToken);
+    }
+
+    /// <summary>Parents sometimes pay. Null hands the bill back to the couple.</summary>
+    [HttpPut("{id:guid}/betaler")]
+    public async Task<ActionResult<BookingResponse>> SætBetaler(
+        Guid id, SætBetalerRequest request, CancellationToken cancellationToken)
+    {
+        var booking = await database.Bookinger.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+        if (booking is null) return NotFound();
+
+        if (request.BetalerKundeId is null)
+        {
+            booking.NulstilBetaler();
+        }
+        else
+        {
+            var findes = await database.Kunder
+                .AnyAsync(k => k.Id == request.BetalerKundeId, cancellationToken);
+            if (!findes)
+            {
+                ModelState.AddModelError(nameof(request.BetalerKundeId), "Betaleren findes ikke.");
+                return ValidationProblem(ModelState);
+            }
+
+            booking.SætBetaler(request.BetalerKundeId.Value);
+        }
+
+        await database.SaveChangesAsync(cancellationToken);
+        return await HentEn(id, cancellationToken);
+    }
+
+    private async Task<Kunde?> FindEllerOpretKunde(
+        OpretBookingRequest request, CancellationToken cancellationToken)
+    {
+        if (request.KundeId is not null)
+        {
+            return await database.Kunder
+                .FirstOrDefaultAsync(kunde => kunde.Id == request.KundeId, cancellationToken);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.NytKundenavn))
+        {
+            return null;
+        }
+
+        var ny = Kunde.Create(request.NytKundenavn);
+        database.Kunder.Add(ny);
+        return ny;
+    }
+
+    private sealed record Række(Booking Booking, string Kundenavn, string Betalernavn);
+
+    /// The payer's name is joined in too, so the list never has to guess whether
+    /// "the customer" and "who gets the invoice" are the same person.
+    private IQueryable<Række> Grundforespørgsel() =>
+        from booking in database.Bookinger.AsNoTracking()
+        join kunde in database.Kunder.AsNoTracking() on booking.KundeId equals kunde.Id
+        join betaler in database.Kunder.AsNoTracking() on booking.BetalerKundeId equals betaler.Id
+        select new Række(booking, kunde.Navn, betaler.Navn);
+
+    private static BookingResponse Map(Række række) =>
+        Mapning.TilResponse(række.Booking, række.Kundenavn, række.Betalernavn);
 }
