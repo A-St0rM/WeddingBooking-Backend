@@ -38,6 +38,12 @@ public sealed class Booking
     /// <summary>The quote and invoice numbers the accounting system gave back. Numbers only.</summary>
     public IReadOnlyList<AccountingReference> AccountingReferences => _references;
 
+    /// <summary>
+    /// Johan's own words for the agreement: what is included in practice, what is
+    /// left out for now. Kept on the booking; each generated version copies it.
+    /// </summary>
+    public string? AgreementClarification { get; private set; }
+
     /// <summary>When the signed agreement came back. The 33 % falls due then for a wedding booked late.</summary>
     public DateTimeOffset? SignedAt { get; private set; }
 
@@ -145,6 +151,14 @@ public sealed class Booking
     public void RemoveLine(Guid lineId)
     {
         _lines.Remove(FindLine(lineId));
+        Touch();
+    }
+
+    public void SetAgreementClarification(string? text)
+    {
+        var clarification = Text.Blank(text);
+        if (clarification?.Length > 10_000) throw new DomainException("Præciseringen er for lang.");
+        AgreementClarification = clarification;
         Touch();
     }
 

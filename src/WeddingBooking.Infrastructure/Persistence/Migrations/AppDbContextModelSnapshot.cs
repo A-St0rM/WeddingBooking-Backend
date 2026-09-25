@@ -69,11 +69,76 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("accounting_references", "app");
                 });
 
+            modelBuilder.Entity("WeddingBooking.Domain.Agreements.AgreementVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<string>("Clarification")
+                        .HasColumnType("text")
+                        .HasColumnName("clarification");
+
+                    b.Property<DateTimeOffset>("GeneratedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("generated_at");
+
+                    b.Property<string>("GeneratedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("generated_by");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("PdfFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pdf_file_id");
+
+                    b.Property<DateTimeOffset?>("SignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_at");
+
+                    b.Property<Guid?>("SignedFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("signed_file_id");
+
+                    b.Property<string>("SignedUploadedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("signed_uploaded_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_agreement_versions");
+
+                    b.HasIndex("PdfFileId")
+                        .HasDatabaseName("ix_agreement_versions_pdf_file_id");
+
+                    b.HasIndex("SignedFileId")
+                        .HasDatabaseName("ix_agreement_versions_signed_file_id");
+
+                    b.HasIndex("BookingId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_agreement_versions_booking_id_number");
+
+                    b.ToTable("agreement_versions", "app");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Bookings.Booking", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("AgreementClarification")
+                        .HasColumnType("text")
+                        .HasColumnName("agreement_clarification");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -471,6 +536,43 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("users", "app");
                 });
 
+            modelBuilder.Entity("WeddingBooking.Infrastructure.Files.FileRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("content");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("integer")
+                        .HasColumnName("size");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stored_files");
+
+                    b.ToTable("stored_files", "app");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Accounting.AccountingReference", b =>
                 {
                     b.HasOne("WeddingBooking.Domain.Bookings.Booking", null)
@@ -479,6 +581,29 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_accounting_references_bookings_booking_id");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Agreements.AgreementVersion", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Bookings.Booking", null)
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_versions_bookings_booking_id");
+
+                    b.HasOne("WeddingBooking.Infrastructure.Files.FileRecord", null)
+                        .WithMany()
+                        .HasForeignKey("PdfFileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_versions_file_record_pdf_file_id");
+
+                    b.HasOne("WeddingBooking.Infrastructure.Files.FileRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SignedFileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_agreement_versions_file_record_signed_file_id");
                 });
 
             modelBuilder.Entity("WeddingBooking.Domain.Bookings.Booking", b =>
