@@ -7,6 +7,7 @@ using WeddingBooking.Api.Auth;
 using WeddingBooking.Api.Configuration;
 using WeddingBooking.Api.Middleware;
 using WeddingBooking.Infrastructure.Persistence;
+using WeddingBooking.Integrations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services.Configure<AccessOptions>(builder.Configuration.GetSection(Acces
 builder.Services.AddPersistence(builder.Configuration.GetConnectionString("Postgres"));
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Bookings.BookingResponder>();
+builder.Services.AddScoped<WeddingBooking.Api.Features.Payments.BookingFinance>();
+builder.Services.AddIntegrations(builder.Configuration);
 
 builder.Services
     // One content type in the contract. Without this every response is described

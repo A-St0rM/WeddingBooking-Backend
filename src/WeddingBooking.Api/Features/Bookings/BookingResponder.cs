@@ -1,22 +1,26 @@
 using WeddingBooking.Api.Auth;
+using WeddingBooking.Api.Common;
 using WeddingBooking.Api.Features.Customers;
+using WeddingBooking.Api.Features.Payments;
 using WeddingBooking.Domain.Bookings;
 using WeddingBooking.Infrastructure.Persistence;
 
 namespace WeddingBooking.Api.Features.Bookings;
 
 /// <summary>
-/// Turns a booking into the answer the caller may see. Everything derived — the
-/// price, the same-date warning — is worked out here, on every read. Price fields
-/// are left out for the roles that do not see prices; hiding them in the browser
-/// would not be access control.
+/// Turns bookings into the answer the caller may see. Everything derived — the
+/// price, the status, the same-date warning — is worked out here, on every read.
+/// Price and payment facts are left out for the roles that do not see prices;
+/// hiding them in the browser would not be access control.
 /// </summary>
-public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser)
+public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser, BookingFinance finance, TimeProvider clock)
 {
+    private bool SeesPrices => currentUser.User.Role.SeesPrices();
+
     public async Task<BookingResponse> RespondAsync(Booking booking, CancellationToken ct)
     {
-        var sameDate = await db.OnDateAsync(booking.EventDate, booking.Id, ct);
-        var lines = booking.OrderedLines.ToList();
+        var sameDate = await SummariesAsync(await db.OnDateAsync(booking.EventDate, booking.Id, ct), ct);
+        var payments = SeesPrices ? await finance.ForAsync(booking, ct) : null;
 
         return new BookingResponse(
             booking.Id,
@@ -24,14 +28,32 @@ public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser)
             booking.GuestCount,
             booking.PaymentTerms,
             booking.Stage,
+            StatusOf(booking, payments),
+            booking.SignedAt,
             booking.CreatedAt,
             booking.UpdatedAt,
             booking.Version,
             CustomerResponse.From(booking.Customer),
-            lines.Select(BookingLineResponse.From).ToList(),
-            currentUser.User.Role.SeesPrices() ? PriceOf(booking) : null,
-            sameDate.Select(BookingSummaryResponse.From).ToList());
+            booking.OrderedLines.Select(BookingLineResponse.From).ToList(),
+            SeesPrices ? PriceOf(booking) : null,
+            sameDate);
     }
+
+    public async Task<IReadOnlyList<BookingSummaryResponse>> SummariesAsync(IReadOnlyCollection<Booking> bookings, CancellationToken ct)
+    {
+        var payments = SeesPrices && bookings.Count > 0 ? await finance.ForManyAsync(bookings, ct) : null;
+        return bookings
+            .Select(booking => BookingSummaryResponse.From(booking, StatusOf(booking, payments?.GetValueOrDefault(booking.Id))))
+            .ToList();
+    }
+
+    private DisplayStatus StatusOf(Booking booking, PaymentsResponse? payments) =>
+        BookingStatus.Derive(new StatusFacts(
+            booking.Stage,
+            booking.EventDate,
+            Today.In(clock),
+            ReservationFeePaid: payments?.ReservationFeePaid() ?? false,
+            AnyInstalmentOverdue: payments?.AnyOverdue() ?? false));
 
     private static PriceResponse PriceOf(Booking booking)
     {

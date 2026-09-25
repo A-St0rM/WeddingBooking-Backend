@@ -20,6 +20,9 @@ public sealed class Customer
     public string? Address { get; private set; }
     public string? PostalCode { get; private set; }
     public string? City { get; private set; }
+    /// <summary>The customer number in the accounting system, once it has one. A reference, nothing more.</summary>
+    public string? AccountingNumber { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public IReadOnlyList<ContactPerson> Contacts => _contacts;
@@ -40,6 +43,8 @@ public sealed class Customer
         PostalCode = Text.Blank(postalCode);
         City = Text.Blank(city);
     }
+
+    public void RecordAccountingNumber(string number) => AccountingNumber = number;
 
     /// <summary>Adds a contact. The first one added becomes the primary.</summary>
     public ContactPerson AddContact(string name, string? email, string? phone)

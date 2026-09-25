@@ -1,6 +1,8 @@
+using WeddingBooking.Domain.Accounting;
 using WeddingBooking.Domain.Catalogue;
 using WeddingBooking.Domain.Common;
 using WeddingBooking.Domain.Customers;
+using WeddingBooking.Domain.Payments;
 using WeddingBooking.Domain.Pricing;
 
 namespace WeddingBooking.Domain.Bookings;
@@ -15,6 +17,7 @@ public sealed class Booking
     public const int MaxGuests = 350;
 
     private readonly List<BookingLine> _lines = [];
+    private readonly List<AccountingReference> _references = [];
 
     private Booking() { }
 
@@ -31,6 +34,12 @@ public sealed class Booking
 
     /// <summary>The small-wedding surcharge as it stood when the booking was made.</summary>
     public SurchargeRule Surcharge { get; private set; } = SurchargeRule.None;
+
+    /// <summary>The quote and invoice numbers the accounting system gave back. Numbers only.</summary>
+    public IReadOnlyList<AccountingReference> AccountingReferences => _references;
+
+    /// <summary>When the signed agreement came back. The 33 % falls due then for a wedding booked late.</summary>
+    public DateTimeOffset? SignedAt { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -87,7 +96,7 @@ public sealed class Booking
     }
 
     /// <summary>The signed agreement has come back.</summary>
-    public void MarkSigned()
+    public void MarkSigned(DateTimeOffset at)
     {
         if (Stage.IsClosed())
         {
@@ -95,8 +104,11 @@ public sealed class Booking
         }
 
         Stage = SalesStage.Signed;
+        SignedAt ??= at;
         Touch();
     }
+
+    public DateOnly? SignedOn => SignedAt is { } at ? DateOnly.FromDateTime(at.UtcDateTime) : null;
 
     /// <summary>What the booking costs right now. Worked out, never stored.</summary>
     public PriceBreakdown Price() =>
@@ -133,6 +145,33 @@ public sealed class Booking
     public void RemoveLine(Guid lineId)
     {
         _lines.Remove(FindLine(lineId));
+        Touch();
+    }
+
+    public DateOnly BookedOn => DateOnly.FromDateTime(CreatedAt.UtcDateTime);
+
+    /// <summary>The newest quote. A new quote replaces the last one as the one that counts.</summary>
+    public AccountingReference? LatestQuote =>
+        _references.Where(r => r.Type == DocumentType.Quote).OrderByDescending(r => r.CreatedAt).FirstOrDefault();
+
+    public AccountingReference? InvoiceFor(InstalmentKind kind) =>
+        _references.FirstOrDefault(r => r.Type == DocumentType.Invoice && r.Instalment == kind);
+
+    public void RecordQuote(string number)
+    {
+        _references.Add(AccountingReference.Create(Id, DocumentType.Quote, number, null));
+        Touch();
+    }
+
+    public void RecordInvoice(InstalmentKind kind, string number)
+    {
+        if (InvoiceFor(kind) is { } existing)
+        {
+            if (existing.Number == number) return;
+            throw new DomainException("Raten er allerede faktureret.");
+        }
+
+        _references.Add(AccountingReference.Create(Id, DocumentType.Invoice, number, kind));
         Touch();
     }
 

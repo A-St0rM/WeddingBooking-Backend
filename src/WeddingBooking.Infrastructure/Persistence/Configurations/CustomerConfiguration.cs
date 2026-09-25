@@ -15,6 +15,7 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(customer => customer.Address).HasMaxLength(200);
         builder.Property(customer => customer.PostalCode).HasMaxLength(10);
         builder.Property(customer => customer.City).HasMaxLength(100);
+        builder.Property(customer => customer.AccountingNumber).HasMaxLength(50);
 
         builder.HasMany(customer => customer.Contacts)
             .WithOne()

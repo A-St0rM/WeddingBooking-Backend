@@ -11,7 +11,7 @@ namespace WeddingBooking.Api.Features.Customers;
 
 [ApiController]
 [Route("api/customers")]
-public sealed class CustomersController(AppDbContext db) : ControllerBase
+public sealed class CustomersController(AppDbContext db, BookingResponder responder) : ControllerBase
 {
     /// <summary>Customers by name, contact name or e-mail — fast enough to call on every keystroke.</summary>
     [HttpGet]
@@ -104,6 +104,6 @@ public sealed class CustomersController(AppDbContext db) : ControllerBase
             .Where(booking => booking.CustomerId == customer.Id)
             .OrderByDescending(booking => booking.EventDate)
             .ToListAsync(ct);
-        return new CustomerDetailResponse(CustomerResponse.From(customer), bookings.Select(BookingSummaryResponse.From).ToList());
+        return new CustomerDetailResponse(CustomerResponse.From(customer), await responder.SummariesAsync(bookings, ct));
     }
 }
