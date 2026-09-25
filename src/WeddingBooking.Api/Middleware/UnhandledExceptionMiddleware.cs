@@ -32,6 +32,10 @@ public sealed class UnhandledExceptionMiddleware(RequestDelegate next, ILogger<U
         {
             await WriteAsync(context, StatusCodes.Status400BadRequest, "Kan ikke gennemføres", refusal.Message);
         }
+        catch (ForbiddenException refusal) when (!context.Response.HasStarted)
+        {
+            await WriteAsync(context, StatusCodes.Status403Forbidden, "Ingen adgang", refusal.Message);
+        }
         catch (DbUpdateConcurrencyException) when (!context.Response.HasStarted)
         {
             await WriteAsync(context, StatusCodes.Status409Conflict, "Ændret af en anden",

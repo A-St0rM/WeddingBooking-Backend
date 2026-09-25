@@ -3,6 +3,7 @@ using WeddingBooking.Api.Common;
 using WeddingBooking.Api.Features.Customers;
 using WeddingBooking.Api.Features.Payments;
 using WeddingBooking.Domain.Bookings;
+using WeddingBooking.Domain.Readiness;
 using WeddingBooking.Infrastructure.Persistence;
 
 namespace WeddingBooking.Api.Features.Bookings;
@@ -53,7 +54,9 @@ public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser, B
             booking.EventDate,
             Today.In(clock),
             ReservationFeePaid: payments?.ReservationFeePaid() ?? false,
-            AnyInstalmentOverdue: payments?.AnyOverdue() ?? false));
+            AnyInstalmentOverdue: payments?.AnyOverdue() ?? false,
+            AllReadinessDone: ReadinessRules.AllDone(booking.ReadinessItems),
+            PostEventOutstanding: ReadinessRules.PostEventOutstanding(booking.ReadinessItems)));
 
     private static PriceResponse PriceOf(Booking booking)
     {

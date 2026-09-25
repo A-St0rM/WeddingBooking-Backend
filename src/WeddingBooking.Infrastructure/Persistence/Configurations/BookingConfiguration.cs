@@ -30,6 +30,9 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasMany(booking => booking.AccountingReferences).WithOne().HasForeignKey(r => r.BookingId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(booking => booking.AccountingReferences).HasField("_references").AutoInclude();
         builder.Ignore(booking => booking.LatestQuote);
+
+        builder.HasMany(booking => booking.ReadinessItems).WithOne().HasForeignKey(item => item.BookingId).OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(booking => booking.ReadinessItems).HasField("_readiness").AutoInclude();
         builder.Ignore(booking => booking.BookedOn);
         builder.Ignore(booking => booking.SignedOn);
 
@@ -72,5 +75,19 @@ internal sealed class AccountingReferenceConfiguration : IEntityTypeConfiguratio
         builder.HasIndex(reference => new { reference.BookingId, reference.Instalment })
             .IsUnique()
             .HasFilter("type = 'Invoice'");
+    }
+}
+
+internal sealed class ReadinessItemConfiguration : IEntityTypeConfiguration<WeddingBooking.Domain.Readiness.ReadinessItem>
+{
+    public void Configure(EntityTypeBuilder<WeddingBooking.Domain.Readiness.ReadinessItem> builder)
+    {
+        builder.ToTable("readiness_items");
+        builder.HasKey(item => item.Id);
+        builder.Property(item => item.Category).HasConversion<string>().HasMaxLength(30);
+        builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(20);
+        builder.Property(item => item.Title).HasMaxLength(200);
+        builder.Property(item => item.Responsible).HasMaxLength(200);
+        builder.Property(item => item.UpdatedBy).HasMaxLength(200);
     }
 }

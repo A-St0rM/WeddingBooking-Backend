@@ -4,6 +4,8 @@ using WeddingBooking.Domain.Common;
 using WeddingBooking.Domain.Customers;
 using WeddingBooking.Domain.Payments;
 using WeddingBooking.Domain.Pricing;
+using WeddingBooking.Domain.Readiness;
+using WeddingBooking.Domain.Users;
 
 namespace WeddingBooking.Domain.Bookings;
 
@@ -18,6 +20,7 @@ public sealed class Booking
 
     private readonly List<BookingLine> _lines = [];
     private readonly List<AccountingReference> _references = [];
+    private readonly List<ReadinessItem> _readiness = [];
 
     private Booking() { }
 
@@ -31,6 +34,8 @@ public sealed class Booking
     public SalesStage Stage { get; private set; }
 
     public IReadOnlyList<BookingLine> Lines => _lines;
+
+    public IReadOnlyList<ReadinessItem> ReadinessItems => _readiness;
 
     /// <summary>The small-wedding surcharge as it stood when the booking was made.</summary>
     public SurchargeRule Surcharge { get; private set; } = SurchargeRule.None;
@@ -69,6 +74,7 @@ public sealed class Booking
             UpdatedAt = now,
         };
         booking.Change(eventDate, guestCount, terms);
+        booking.EnsureReadiness();
         return booking;
     }
 
@@ -161,6 +167,51 @@ public sealed class Booking
         AgreementClarification = clarification;
         Touch();
     }
+
+    /// <summary>Adds the standard readiness items that are missing. Safe to call again.</summary>
+    public bool EnsureReadiness()
+    {
+        var missing = ReadinessRules.Defaults.Where(d => _readiness.All(item => item.Category != d.Category)).ToList();
+        foreach (var (category, title) in missing)
+        {
+            _readiness.Add(ReadinessItem.Create(Id, category, title));
+        }
+        return missing.Count > 0;
+    }
+
+    public ReadinessItem AddReadinessItem(ReadinessCategory category, string title)
+    {
+        var item = ReadinessItem.Create(Id, category, title);
+        _readiness.Add(item);
+        Touch();
+        return item;
+    }
+
+    public void RemoveReadinessItem(Guid itemId)
+    {
+        var item = FindReadiness(itemId);
+        if (_readiness.Count(i => i.Category == item.Category) == 1)
+        {
+            throw new DomainException("Det sidste punkt i en kategori kan ikke fjernes.");
+        }
+        _readiness.Remove(item);
+        Touch();
+    }
+
+    /// <summary>Changes one readiness item, if the role may change that part.</summary>
+    public void UpdateReadiness(Guid itemId, ReadinessStatus status, string? notes, string? responsible, User by)
+    {
+        var item = FindReadiness(itemId);
+        if (!ReadinessRules.CanEdit(by.Role, item.Category))
+        {
+            throw new ForbiddenException("Din rolle må ikke rette dette klargøringspunkt.");
+        }
+        item.Update(status, notes, responsible, by.Name);
+        Touch();
+    }
+
+    private ReadinessItem FindReadiness(Guid itemId) =>
+        _readiness.FirstOrDefault(item => item.Id == itemId) ?? throw new DomainException("Klargøringspunktet findes ikke.");
 
     public DateOnly BookedOn => DateOnly.FromDateTime(CreatedAt.UtcDateTime);
 
