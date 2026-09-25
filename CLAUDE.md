@@ -21,6 +21,12 @@ ASP.NET Core-API'et til bryllupsbookingen på Engestofte Gods. Frontenden og pro
 - **Hemmeligheder ligger i `dotnet user-secrets` lokalt og i App Service-indstillingerne i Azure.** `appsettings.json` viser kun formen.
 - **Koden er på engelsk.** Oversættelsen af domænebegreberne står i `readyprompt.md` §7.
 
+## Databasen
+
+Supabase-projektet `WeddingBooking` (`htvujiswzzzlanamefri`, eu-central-1) er oprettet og klar. **Du har adgang til Supabase-connectoren** — brug den til at se skemaet, før du ændrer det, til at anvende migrationer og til at køre advisors bagefter.
+
+Skemaet ejes af EF Core-migrationerne. Skriv ændringen som en EF-migration, og anvend den SQL, `dotnet ef migrations script --idempotent` genererer — så EF's historik og databasen er enige. Fremgangsmåden står i `readyprompt.md` §8.
+
 ## Middleware-rækkefølgen
 
 `UseForwardedHeaders` → `UseHttpsRedirection` → `UseCors` → undtagelses-middleware → `UseAuthentication` → `UseAuthorization` → adgangs-middleware.
