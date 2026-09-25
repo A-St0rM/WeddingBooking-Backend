@@ -64,9 +64,10 @@ internal static class SimDocumentPdf
 
                     table.Header(header =>
                     {
-                        foreach (var heading in new[] { "Beskrivelse", "Antal", "Pris", "Beløb" })
+                        header.Cell().BorderBottom(1).PaddingVertical(4).Text("Beskrivelse").Bold();
+                        foreach (var heading in new[] { "Antal", "Pris", "Beløb" })
                         {
-                            header.Cell().BorderBottom(1).PaddingVertical(4).Text(heading).Bold();
+                            header.Cell().BorderBottom(1).PaddingVertical(4).AlignRight().Text(heading).Bold();
                         }
                     });
 

@@ -70,18 +70,20 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     /// <summary>A client signed in as someone with that e-mail — known to the system or not.</summary>
     public HttpClient ClientFor(string email)
     {
-        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TokenFor(email));
+        return client;
+    }
+
+    public static string TokenFor(string email, TimeSpan? lifetime = null) =>
+        new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = "test",
             Audience = "authenticated",
             Subject = new ClaimsIdentity([new Claim("sub", DeterministicId(email).ToString()), new Claim("email", email)]),
-            Expires = DateTime.UtcNow.AddHours(1),
+            Expires = DateTime.UtcNow.Add(lifetime ?? TimeSpan.FromHours(1)),
             SigningCredentials = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256),
         });
-        var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return client;
-    }
 
     /// <summary>Adds a member of staff directly, as the user admin would.</summary>
     public async Task<HttpClient> StaffAsync(string email, Role role)
@@ -96,6 +98,6 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return ClientFor(email);
     }
 
-    private static Guid DeterministicId(string email) =>
+    public static Guid DeterministicId(string email) =>
         new(System.Security.Cryptography.MD5.HashData(Encoding.UTF8.GetBytes(email)));
 }
