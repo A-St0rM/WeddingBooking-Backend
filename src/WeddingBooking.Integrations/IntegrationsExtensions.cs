@@ -6,6 +6,7 @@ using WeddingBooking.Domain.Messages;
 using WeddingBooking.Integrations.Accounting.Simulated;
 using WeddingBooking.Integrations.Mail.Simulated;
 using WeddingBooking.Integrations.Summaries;
+using WeddingBooking.Integrations.Trello;
 
 namespace WeddingBooking.Integrations;
 
@@ -40,6 +41,9 @@ public static class IntegrationsExtensions
         {
             services.AddSingleton<Domain.Summaries.ISummariser, OfflineSummariser>();
         }
+
+        services.Configure<TrelloOptions>(configuration.GetSection("Trello"));
+        services.AddHttpClient<Domain.Trello.ITrelloGateway, TrelloApiGateway>(client => client.Timeout = TimeSpan.FromSeconds(60));
 
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         return services;

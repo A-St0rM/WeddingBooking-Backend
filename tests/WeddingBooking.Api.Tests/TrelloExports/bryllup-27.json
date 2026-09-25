@@ -1,0 +1,56 @@
+{
+ "id": "b27",
+ "name": "Bryllup 27",
+ "lists": [
+  {
+   "id": "l1",
+   "name": "Forespørgsler",
+   "closed": false
+  },
+  {
+   "id": "l2",
+   "name": "Bekræftede bryllupper",
+   "closed": false
+  }
+ ],
+ "cards": [
+  {
+   "id": "b27-c0",
+   "name": "Bryllup 80 pax",
+   "desc": "Dato ikke fastlagt endnu",
+   "due": null,
+   "idList": "l2",
+   "closed": false,
+   "labels": [],
+   "customFieldItems": []
+  },
+  {
+   "id": "b27-c1",
+   "name": "Maria og Jonas - 120 gæster - 3. juli",
+   "desc": "",
+   "due": null,
+   "idList": "l1",
+   "closed": false,
+   "labels": [],
+   "customFieldItems": []
+  },
+  {
+   "id": "b27-c2",
+   "name": "Gammelt kort 70 pax 1.5.2027",
+   "desc": "",
+   "due": null,
+   "idList": "l2",
+   "closed": true,
+   "labels": [],
+   "customFieldItems": []
+  }
+ ],
+ "checklists": [],
+ "customFields": [
+  {
+   "id": "cf1",
+   "name": "Antal gæster",
+   "type": "number"
+  }
+ ]
+}

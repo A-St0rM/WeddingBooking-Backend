@@ -126,6 +126,125 @@
         }
       }
     },
+    "/api/trello/status": {
+      "get": {
+        "tags": [
+          "TrelloImport"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrelloStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trello/preview": {
+      "post": {
+        "tags": [
+          "TrelloImport"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "files": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/IFormFile"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "boardIds": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trello/import": {
+      "post": {
+        "tags": [
+          "TrelloImport"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "files": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/IFormFile"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "boardIds": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/summary/standalone": {
       "post": {
         "tags": [
@@ -2638,6 +2757,32 @@
           }
         }
       },
+      "BoardReport": {
+        "required": [
+          "name",
+          "year",
+          "cards"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardReport"
+            }
+          }
+        }
+      },
       "BookingLineResponse": {
         "required": [
           "id",
@@ -2841,6 +2986,91 @@
           },
           "paymentTerms": {
             "$ref": "#/components/schemas/PaymentTerms"
+          }
+        }
+      },
+      "CardAction": {
+        "enum": [
+          "Import",
+          "Imported",
+          "AlreadyImported",
+          "Skip"
+        ]
+      },
+      "CardReport": {
+        "required": [
+          "cardId",
+          "cardName",
+          "listName",
+          "action",
+          "reason",
+          "coupleName",
+          "eventDate",
+          "guestCount",
+          "existingCustomer",
+          "labels",
+          "readinessItems",
+          "bookingId"
+        ],
+        "type": "object",
+        "properties": {
+          "cardId": {
+            "type": "string"
+          },
+          "cardName": {
+            "type": "string"
+          },
+          "listName": {
+            "type": "string"
+          },
+          "action": {
+            "$ref": "#/components/schemas/CardAction"
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "coupleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "eventDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "guestCount": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "existingCustomer": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "readinessItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bookingId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -3309,6 +3539,49 @@
       "IFormFile": {
         "type": "string",
         "format": "binary"
+      },
+      "ImportReport": {
+        "required": [
+          "dryRun",
+          "boards",
+          "cards",
+          "importable",
+          "imported",
+          "alreadyImported",
+          "skipped"
+        ],
+        "type": "object",
+        "properties": {
+          "dryRun": {
+            "type": "boolean"
+          },
+          "boards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BoardReport"
+            }
+          },
+          "cards": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "importable": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imported": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alreadyImported": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skipped": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "InstalmentKind": {
         "enum": [
@@ -4275,6 +4548,17 @@
           }
         }
       },
+      "TrelloStatusResponse": {
+        "required": [
+          "apiConfigured"
+        ],
+        "type": "object",
+        "properties": {
+          "apiConfigured": {
+            "type": "boolean"
+          }
+        }
+      },
       "UpdateBookingRequest": {
         "required": [
           "eventDate",
@@ -4477,6 +4761,9 @@
     },
     {
       "name": "Users"
+    },
+    {
+      "name": "TrelloImport"
     },
     {
       "name": "Summary"

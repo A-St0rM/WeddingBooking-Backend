@@ -1,0 +1,95 @@
+{
+ "id": "b26",
+ "name": "Bryllup 26",
+ "lists": [
+  {
+   "id": "l1",
+   "name": "Forespørgsler",
+   "closed": false
+  },
+  {
+   "id": "l2",
+   "name": "Bekræftede bryllupper",
+   "closed": false
+  }
+ ],
+ "cards": [
+  {
+   "id": "b26-c0",
+   "name": "Skabelon — Bryllup XX pax",
+   "desc": "",
+   "due": null,
+   "idList": "l2",
+   "closed": false,
+   "labels": [],
+   "customFieldItems": []
+  },
+  {
+   "id": "b26-c1",
+   "name": "Anna & Mikkel 90 pax 20.06.2026",
+   "desc": "anna@example.dk\n20 30 40 50",
+   "due": null,
+   "idList": "l2",
+   "closed": false,
+   "labels": [
+    {
+     "name": "faktura betalt",
+     "color": "green"
+    }
+   ],
+   "customFieldItems": []
+  },
+  {
+   "id": "b26-c2",
+   "name": "Julie og Kasper",
+   "desc": "",
+   "due": "2026-08-15T12:00:00.000Z",
+   "idList": "l2",
+   "closed": false,
+   "labels": [],
+   "customFieldItems": [
+    {
+     "idCustomField": "cf1",
+     "value": {
+      "number": "64"
+     }
+    }
+   ]
+  }
+ ],
+ "checklists": [
+  {
+   "id": "b26-c1-cl0",
+   "idCard": "b26-c1",
+   "name": "Mad",
+   "checkItems": [
+    {
+     "name": "Menu",
+     "state": "complete"
+    },
+    {
+     "name": "Allergier",
+     "state": "complete"
+    }
+   ]
+  },
+  {
+   "id": "b26-c1-cl1",
+   "idCard": "b26-c1",
+   "name": "Kontakt",
+   "checkItems": [
+    {
+     "name": "Ring",
+     "state": "complete"
+    }
+   ]
+  }
+ ],
+ "customFields": [
+  {
+   "id": "cf1",
+   "name": "Antal gæster",
+   "type": "number"
+  }
+ ]
+}

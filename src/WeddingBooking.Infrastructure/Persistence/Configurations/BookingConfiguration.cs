@@ -44,6 +44,9 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
         builder.HasOne<WeddingBooking.Domain.Users.User>().WithMany().HasForeignKey(booking => booking.ViewingHostId).OnDelete(DeleteBehavior.SetNull);
 
+        builder.Property(booking => booking.TrelloCardId).HasMaxLength(64);
+        builder.HasIndex(booking => booking.TrelloCardId).IsUnique();
+
         builder.HasIndex(booking => booking.EventDate);
         builder.HasIndex(booking => booking.CustomerId);
     }

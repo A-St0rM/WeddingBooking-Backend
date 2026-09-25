@@ -1,0 +1,36 @@
+{
+ "id": "b28",
+ "name": "Bryllup 28",
+ "lists": [
+  {
+   "id": "l1",
+   "name": "Forespørgsler",
+   "closed": false
+  },
+  {
+   "id": "l2",
+   "name": "Bekræftede bryllupper",
+   "closed": false
+  }
+ ],
+ "cards": [
+  {
+   "id": "b28-c0",
+   "name": "Clara & Emil 27/5 75 pax",
+   "desc": "clara.hansen@example.dk og emil@example.dk",
+   "due": null,
+   "idList": "l2",
+   "closed": false,
+   "labels": [],
+   "customFieldItems": []
+  }
+ ],
+ "checklists": [],
+ "customFields": [
+  {
+   "id": "cf1",
+   "name": "Antal gæster",
+   "type": "number"
+  }
+ ]
+}
