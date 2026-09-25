@@ -126,6 +126,95 @@
         }
       }
     },
+    "/api/summary/standalone": {
+      "post": {
+        "tags": [
+          "Summary"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StandaloneSummaryRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StandaloneSummaryRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StandaloneSummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/summary": {
+      "post": {
+        "tags": [
+          "Summary"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingSummaryRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingSummaryRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingSummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/settings/pricing": {
       "get": {
         "tags": [
@@ -2698,6 +2787,20 @@
           }
         }
       },
+      "BookingSummaryRequest": {
+        "required": [
+          "extraText"
+        ],
+        "type": "object",
+        "properties": {
+          "extraText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "BookingSummaryResponse": {
         "required": [
           "id",
@@ -2738,6 +2841,32 @@
           },
           "paymentTerms": {
             "$ref": "#/components/schemas/PaymentTerms"
+          }
+        }
+      },
+      "CaseSummary": {
+        "required": [
+          "status",
+          "agreedContent",
+          "openItems",
+          "lastContact"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "agreedContent": {
+            "type": "string"
+          },
+          "openItems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastContact": {
+            "type": "string"
           }
         }
       },
@@ -4056,6 +4185,17 @@
           }
         }
       },
+      "StandaloneSummaryRequest": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        }
+      },
       "StringSegment": {
         "type": "object",
         "properties": {
@@ -4081,6 +4221,36 @@
           },
           "hasValue": {
             "type": "boolean"
+          }
+        }
+      },
+      "SummaryResponse": {
+        "required": [
+          "source",
+          "summary",
+          "facts",
+          "generatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/CaseSummary"
+          },
+          "facts": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -4307,6 +4477,9 @@
     },
     {
       "name": "Users"
+    },
+    {
+      "name": "Summary"
     },
     {
       "name": "PricingSettings"

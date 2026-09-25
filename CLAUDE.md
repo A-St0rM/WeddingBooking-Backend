@@ -29,7 +29,7 @@ Skemaet ejes af EF Core-migrationerne. Skriv ændringen som en EF-migration, og 
 
 ## Middleware-rækkefølgen
 
-`UseForwardedHeaders` → `UseHttpsRedirection` → `UseCors` → undtagelses-middleware → `UseAuthentication` → `UseAuthorization` → adgangs-middleware.
+`UseForwardedHeaders` → `UseHttpsRedirection` → `UseCors` → undtagelses-middleware → `UseRateLimiter` → `UseAuthentication` → `UseAuthorization` → adgangs-middleware.
 
 Undtagelses-middlewaren ligger efter `UseCors`, fordi ASP.NET fjerner CORS-headerne, når en undtagelse slipper igennem — og så viser browseren en 500 som en CORS-fejl.
 
