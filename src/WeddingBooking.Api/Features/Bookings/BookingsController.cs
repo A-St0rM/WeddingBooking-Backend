@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WeddingBooking.Api.Auth;
 using WeddingBooking.Api.Common;
-using WeddingBooking.Api.Features.Customers;
 using WeddingBooking.Domain.Bookings;
 using WeddingBooking.Domain.Common;
 using WeddingBooking.Domain.Customers;
@@ -11,7 +11,7 @@ namespace WeddingBooking.Api.Features.Bookings;
 
 [ApiController]
 [Route("api/bookings")]
-public sealed class BookingsController(AppDbContext db) : ControllerBase
+public sealed class BookingsController(AppDbContext db, BookingResponder responder) : ControllerBase
 {
     /// <summary>Bookings, soonest first. Past and closed bookings only when asked for.</summary>
     [HttpGet]
@@ -53,14 +53,14 @@ public sealed class BookingsController(AppDbContext db) : ControllerBase
     {
         var booking = await db.WithCustomer().AsNoTracking().FirstOrDefaultAsync(b => b.Id == id, ct);
         if (booking is null) return NotFound();
-        return await ResponseAsync(booking, ct);
+        return await responder.RespondAsync(booking, ct);
     }
 
     /// <summary>
     /// A booking from a name, a date and a guest count. Give an existing customer's
     /// id to hang the booking on them — a couple who come back are the same customer.
     /// </summary>
-    [HttpPost]
+    [HttpPost, ManagementOnly]
     public async Task<ActionResult<BookingResponse>> Create(CreateBookingRequest request, CancellationToken ct)
     {
         Customer customer;
@@ -76,14 +76,17 @@ public sealed class BookingsController(AppDbContext db) : ControllerBase
             db.Customers.Add(customer);
         }
 
-        var booking = Booking.Create(customer, request.EventDate, request.GuestCount, request.PaymentTerms ?? PaymentTerms.New);
+        // The surcharge is copied onto the booking, like a price: changing it later leaves this booking alone.
+        var settings = await db.PricingSettings.AsNoTracking().FirstOrDefaultAsync(ct);
+        var booking = Booking.Create(customer, request.EventDate, request.GuestCount, request.PaymentTerms ?? PaymentTerms.New,
+            settings?.Surcharge);
         db.Bookings.Add(booking);
         await db.SaveChangesAsync(ct);
 
-        return CreatedAtAction(nameof(Get), new { id = booking.Id }, await ResponseAsync(booking, ct));
+        return CreatedAtAction(nameof(Get), new { id = booking.Id }, await responder.RespondAsync(booking, ct));
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:guid}"), ManagementOnly]
     public async Task<ActionResult<BookingResponse>> Update(Guid id, UpdateBookingRequest request, CancellationToken ct)
     {
         var booking = await db.WithCustomer().FirstOrDefaultAsync(b => b.Id == id, ct);
@@ -94,10 +97,10 @@ public sealed class BookingsController(AppDbContext db) : ControllerBase
         booking.Change(request.EventDate, request.GuestCount, request.PaymentTerms);
         await db.SaveChangesAsync(ct);
 
-        return await ResponseAsync(booking, ct);
+        return await responder.RespondAsync(booking, ct);
     }
 
-    [HttpPut("{id:guid}/stage")]
+    [HttpPut("{id:guid}/stage"), ManagementOnly]
     public async Task<ActionResult<BookingResponse>> ChangeStage(Guid id, ChangeStageRequest request, CancellationToken ct)
     {
         var booking = await db.WithCustomer().FirstOrDefaultAsync(b => b.Id == id, ct);
@@ -106,22 +109,6 @@ public sealed class BookingsController(AppDbContext db) : ControllerBase
         booking.MoveTo(request.Stage);
         await db.SaveChangesAsync(ct);
 
-        return await ResponseAsync(booking, ct);
-    }
-
-    private async Task<BookingResponse> ResponseAsync(Booking booking, CancellationToken ct)
-    {
-        var sameDate = await db.OnDateAsync(booking.EventDate, booking.Id, ct);
-        return new BookingResponse(
-            booking.Id,
-            booking.EventDate,
-            booking.GuestCount,
-            booking.PaymentTerms,
-            booking.Stage,
-            booking.CreatedAt,
-            booking.UpdatedAt,
-            booking.Version,
-            CustomerResponse.From(booking.Customer),
-            sameDate.Select(BookingSummaryResponse.From).ToList());
+        return await responder.RespondAsync(booking, ct);
     }
 }

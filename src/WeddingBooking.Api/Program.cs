@@ -15,6 +15,7 @@ builder.Services.Configure<AccessOptions>(builder.Configuration.GetSection(Acces
 
 builder.Services.AddPersistence(builder.Configuration.GetConnectionString("Postgres"));
 builder.Services.AddScoped<CurrentUser>();
+builder.Services.AddScoped<WeddingBooking.Api.Features.Bookings.BookingResponder>();
 
 builder.Services
     // One content type in the contract. Without this every response is described

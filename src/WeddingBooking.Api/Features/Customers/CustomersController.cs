@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WeddingBooking.Api.Auth;
 using WeddingBooking.Api.Common;
 using WeddingBooking.Api.Features.Bookings;
 using WeddingBooking.Domain.Bookings;
@@ -59,7 +60,7 @@ public sealed class CustomersController(AppDbContext db) : ControllerBase
         return await DetailAsync(customer, ct);
     }
 
-    [HttpPost]
+    [HttpPost, ManagementOnly]
     public async Task<ActionResult<CustomerDetailResponse>> Create(CreateCustomerRequest request, CancellationToken ct)
     {
         var customer = Customer.Create(request.Name);
@@ -68,23 +69,23 @@ public sealed class CustomersController(AppDbContext db) : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = customer.Id }, await DetailAsync(customer, ct));
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:guid}"), ManagementOnly]
     public Task<ActionResult<CustomerDetailResponse>> Update(Guid id, UpdateCustomerRequest request, CancellationToken ct) =>
         ChangeAsync(id, customer => customer.UpdateDetails(request.Name, request.Address, request.PostalCode, request.City), ct);
 
-    [HttpPost("{id:guid}/contacts")]
+    [HttpPost("{id:guid}/contacts"), ManagementOnly]
     public Task<ActionResult<CustomerDetailResponse>> AddContact(Guid id, ContactRequest request, CancellationToken ct) =>
         ChangeAsync(id, customer => customer.AddContact(request.Name, request.Email, request.Phone), ct);
 
-    [HttpPut("{id:guid}/contacts/{contactId:guid}")]
+    [HttpPut("{id:guid}/contacts/{contactId:guid}"), ManagementOnly]
     public Task<ActionResult<CustomerDetailResponse>> UpdateContact(Guid id, Guid contactId, ContactRequest request, CancellationToken ct) =>
         ChangeAsync(id, customer => customer.UpdateContact(contactId, request.Name, request.Email, request.Phone), ct);
 
-    [HttpPost("{id:guid}/contacts/{contactId:guid}/primary")]
+    [HttpPost("{id:guid}/contacts/{contactId:guid}/primary"), ManagementOnly]
     public Task<ActionResult<CustomerDetailResponse>> MakePrimary(Guid id, Guid contactId, CancellationToken ct) =>
         ChangeAsync(id, customer => customer.MakePrimary(contactId), ct);
 
-    [HttpDelete("{id:guid}/contacts/{contactId:guid}")]
+    [HttpDelete("{id:guid}/contacts/{contactId:guid}"), ManagementOnly]
     public Task<ActionResult<CustomerDetailResponse>> RemoveContact(Guid id, Guid contactId, CancellationToken ct) =>
         ChangeAsync(id, customer => customer.RemoveContact(contactId), ct);
 
