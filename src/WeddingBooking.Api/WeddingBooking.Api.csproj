@@ -9,6 +9,7 @@
          an API change in review. -->
     <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
     <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)</OpenApiDocumentsDirectory>
+    <UserSecretsId>756f08e3-377b-467d-8be3-465b9ecdffa2</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
