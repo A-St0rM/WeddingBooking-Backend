@@ -21,12 +21,12 @@ builder.Services
     // three times (text/plain, text/json, application/json) and the generated
     // client carries all three.
     .AddControllers(options => options.Filters.Add(new Microsoft.AspNetCore.Mvc.ProducesAttribute("application/json")))
-    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-// Enums travel as their names. MVC serialises with the options above, but the
-// OpenAPI document is generated from the minimal-API options — set both, or the
-// contract says "number" while the API sends "EventManager".
-builder.Services.ConfigureHttpJsonOptions(options =>
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    .AddJsonOptions(options => Json.Configure(options.JsonSerializerOptions));
+// Enums travel as their names and numbers as numbers. MVC serialises with the
+// options above, but the OpenAPI document is generated from the minimal-API
+// options — set both, or the contract says "number" while the API sends
+// "EventManager", and "number | string" for every count and amount.
+builder.Services.ConfigureHttpJsonOptions(options => Json.Configure(options.SerializerOptions));
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
@@ -99,3 +99,12 @@ app.Run();
 
 /// <summary>Exposed so tests can boot the real application through WebApplicationFactory.</summary>
 public partial class Program;
+
+internal static class Json
+{
+    public static void Configure(System.Text.Json.JsonSerializerOptions options)
+    {
+        options.Converters.Add(new JsonStringEnumConverter());
+        options.NumberHandling = JsonNumberHandling.Strict;
+    }
+}
