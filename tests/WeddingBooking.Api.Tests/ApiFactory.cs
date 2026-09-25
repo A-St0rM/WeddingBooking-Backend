@@ -60,9 +60,10 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         if (string.IsNullOrEmpty(ConnectionString)) return;
         using var scope = Services.CreateScope();
         var app = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await app.Database.ExecuteSqlRawAsync("DROP SCHEMA IF EXISTS app CASCADE; DROP SCHEMA IF EXISTS accounting_sim CASCADE;");
+        await app.Database.ExecuteSqlRawAsync("DROP SCHEMA IF EXISTS app CASCADE; DROP SCHEMA IF EXISTS accounting_sim CASCADE; DROP SCHEMA IF EXISTS mail_sim CASCADE;");
         await app.Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<AccountingSimDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<WeddingBooking.Integrations.Mail.Simulated.SimulatedMailDbContext>().Database.MigrateAsync();
     }
 
     Task IAsyncLifetime.DisposeAsync() => Task.CompletedTask;

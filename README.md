@@ -29,6 +29,8 @@ dotnet ef migrations add <Navn> --context AccountingSimDbContext --project src/W
 dotnet ef migrations script --idempotent --context AccountingSimDbContext --project src/WeddingBooking.Integrations --startup-project src/WeddingBooking.Api
 ```
 
+Den simulerede udbakke har ligeledes sin egen `SimulatedMailDbContext` i skemaet `mail_sim` (samme kommandoer med `--context SimulatedMailDbContext --output-dir Mail/Simulated/Migrations`).
+
 Læs migrationen igennem, før den køres. Kør aldrig `migrations remove` med `--no-build`: den fjerner så den seneste migration i den gamle build, ikke den nye. SQL'en fra `script --idempotent` er den, der anvendes gennem Supabase-connectoren.
 
 ## Tests
@@ -37,7 +39,7 @@ Læs migrationen igennem, før den køres. Kør aldrig `migrations remove` med `
 dotnet test tests/WeddingBooking.Domain.Tests
 ```
 
-Domænetestene dækker pris, betalingsplan og visningsstatus og kører i pipelinen. Integrationstestene i `WeddingBooking.Api.Tests` kører det rigtige API mod en rigtig Postgres og springes over, medmindre `WB_TEST_POSTGRES` peger på en database, der må slettes — de dropper skemaerne `app` og `accounting_sim` først:
+Domænetestene dækker pris, betalingsplan og visningsstatus og kører i pipelinen. Integrationstestene i `WeddingBooking.Api.Tests` kører det rigtige API mod en rigtig Postgres og springes over, medmindre `WB_TEST_POSTGRES` peger på en database, der må slettes — de dropper skemaerne `app`, `accounting_sim` og `mail_sim` først:
 
 ```bash
 WB_TEST_POSTGRES="Host=localhost;Port=5433;Database=weddingbooking;Username=postgres;Password=test" dotnet test tests/WeddingBooking.Api.Tests

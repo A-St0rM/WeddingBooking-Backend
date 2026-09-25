@@ -182,6 +182,14 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
+                    b.Property<DateTimeOffset?>("ViewingAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("viewing_at");
+
+                    b.Property<Guid?>("ViewingHostId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("viewing_host_id");
+
                     b.ComplexProperty(typeof(Dictionary<string, object>), "Surcharge", "WeddingBooking.Domain.Bookings.Booking.Surcharge#SurchargeRule", b1 =>
                         {
                             b1.IsRequired();
@@ -204,6 +212,9 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EventDate")
                         .HasDatabaseName("ix_bookings_event_date");
+
+                    b.HasIndex("ViewingHostId")
+                        .HasDatabaseName("ix_bookings_viewing_host_id");
 
                     b.ToTable("bookings", "app", t =>
                         {
@@ -449,6 +460,97 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("customers", "app");
                 });
 
+            modelBuilder.Entity("WeddingBooking.Domain.Messages.MessageTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("body");
+
+                    b.Property<bool>("CcViewingHost")
+                        .HasColumnType("boolean")
+                        .HasColumnName("cc_viewing_host");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("subject");
+
+                    b.HasKey("Id")
+                        .HasName("pk_message_templates");
+
+                    b.ToTable("message_templates", "app");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Notes.Note", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("author_name");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Recipients")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("recipients");
+
+                    b.Property<string>("Subject")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("subject");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notes");
+
+                    b.HasIndex("BookingId", "CreatedAt")
+                        .HasDatabaseName("ix_notes_booking_id_created_at");
+
+                    b.ToTable("notes", "app");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Pricing.PricingSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -670,6 +772,12 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_bookings_customers_customer_id");
 
+                    b.HasOne("WeddingBooking.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ViewingHostId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_bookings_users_viewing_host_id");
+
                     b.Navigation("Customer");
                 });
 
@@ -701,6 +809,16 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_contact_persons_customers_customer_id");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Notes.Note", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Bookings.Booking", null)
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notes_bookings_booking_id");
                 });
 
             modelBuilder.Entity("WeddingBooking.Domain.Readiness.ReadinessItem", b =>

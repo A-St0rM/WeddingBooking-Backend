@@ -42,6 +42,8 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             surcharge.Property(rule => rule.Amount).HasColumnName("surcharge_amount").HasPrecision(12, 2);
         });
 
+        builder.HasOne<WeddingBooking.Domain.Users.User>().WithMany().HasForeignKey(booking => booking.ViewingHostId).OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(booking => booking.EventDate);
         builder.HasIndex(booking => booking.CustomerId);
     }

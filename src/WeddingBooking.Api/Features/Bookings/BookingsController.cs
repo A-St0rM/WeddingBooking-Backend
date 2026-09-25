@@ -111,4 +111,26 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
 
         return await responder.RespondAsync(booking, ct);
     }
+
+    /// <summary>Books the viewing: when, and who shows the couple round.</summary>
+    [HttpPut("{id:guid}/viewing"), ManagementOnly]
+    public async Task<ActionResult<BookingResponse>> ScheduleViewing(Guid id, ScheduleViewingRequest request, CancellationToken ct)
+    {
+        var booking = await db.WithCustomer().FirstOrDefaultAsync(b => b.Id == id, ct);
+        if (booking is null) return NotFound();
+        if (request.HostId is { } hostId && !await db.Users.AnyAsync(u => u.Id == hostId && u.IsActive, ct))
+        {
+            throw new DomainException("Værten findes ikke blandt brugerne.");
+        }
+
+        booking.ScheduleViewing(request.At, request.HostId);
+        await db.SaveChangesAsync(ct);
+        return await responder.RespondAsync(booking, ct);
+    }
+
+    /// <summary>The staff who can show a couple round, for choosing a viewing's host.</summary>
+    [HttpGet("viewing-hosts")]
+    public async Task<IReadOnlyList<ViewingHostResponse>> ViewingHosts(CancellationToken ct) =>
+        await db.Users.AsNoTracking().Where(u => u.IsActive).OrderBy(u => u.Name)
+            .Select(u => new ViewingHostResponse(u.Id, u.Name, u.Phone)).ToListAsync(ct);
 }

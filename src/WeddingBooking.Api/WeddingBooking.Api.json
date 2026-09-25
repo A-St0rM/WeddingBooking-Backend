@@ -797,6 +797,361 @@
         }
       }
     },
+    "/api/bookings/{id}/notes": {
+      "get": {
+        "tags": [
+          "Notes"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NoteResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Notes"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WriteNoteRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WriteNoteRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WriteNoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/messages/draft": {
+      "post": {
+        "tags": [
+          "BookingMessages"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDraftResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/messages/send": {
+      "post": {
+        "tags": [
+          "BookingMessages"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/message-templates": {
+      "get": {
+        "tags": [
+          "MessageTemplates"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageTemplateResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MessageTemplates"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/message-templates/placeholders": {
+      "get": {
+        "tags": [
+          "MessageTemplates"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaceholderResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/message-templates/{id}": {
+      "put": {
+        "tags": [
+          "MessageTemplates"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MessageTemplates"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/outbox": {
+      "get": {
+        "tags": [
+          "Outbox"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OutboxMessageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me": {
       "get": {
         "tags": [
@@ -1595,6 +1950,78 @@
         }
       }
     },
+    "/api/bookings/{id}/viewing": {
+      "put": {
+        "tags": [
+          "Bookings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleViewingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleViewingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleViewingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/viewing-hosts": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ViewingHostResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bookings/{id}/agreement": {
       "get": {
         "tags": [
@@ -2175,6 +2602,8 @@
           "stage",
           "status",
           "signedAt",
+          "viewingAt",
+          "viewingHost",
           "createdAt",
           "updatedAt",
           "version",
@@ -2212,6 +2641,23 @@
               "string"
             ],
             "format": "date-time"
+          },
+          "viewingAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "viewingHost": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ViewingHostResponse"
+              }
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -2667,6 +3113,18 @@
           "Invoice"
         ]
       },
+      "DraftRequest": {
+        "required": [
+          "templateId"
+        ],
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "EntityTagHeaderValue": {
         "type": "object",
         "properties": {
@@ -2849,6 +3307,196 @@
           }
         }
       },
+      "MessageDraftResponse": {
+        "required": [
+          "templateId",
+          "to",
+          "cc",
+          "subject",
+          "body",
+          "missing",
+          "simulated"
+        ],
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "simulated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MessageTemplateRequest": {
+        "required": [
+          "name",
+          "subject",
+          "body",
+          "ccViewingHost"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "ccViewingHost": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MessageTemplateResponse": {
+        "required": [
+          "id",
+          "name",
+          "subject",
+          "body",
+          "ccViewingHost"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "ccViewingHost": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NoteResponse": {
+        "required": [
+          "id",
+          "type",
+          "text",
+          "authorName",
+          "createdAt",
+          "recipients",
+          "subject"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/NoteType"
+          },
+          "text": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recipients": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "NoteType": {
+        "enum": [
+          "Call",
+          "Email",
+          "Internal"
+        ]
+      },
+      "OutboxMessageResponse": {
+        "required": [
+          "id",
+          "fromName",
+          "replyTo",
+          "to",
+          "cc",
+          "subject",
+          "body",
+          "sentAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromName": {
+            "type": "string"
+          },
+          "replyTo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "to": {
+            "type": "string"
+          },
+          "cc": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "PackageKind": {
         "enum": [
           "Base",
@@ -3024,6 +3672,21 @@
           "Old",
           "New"
         ]
+      },
+      "PlaceholderResponse": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
       },
       "PricedLineResponse": {
         "required": [
@@ -3262,6 +3925,61 @@
           "Cancelled",
           "Lost"
         ]
+      },
+      "ScheduleViewingRequest": {
+        "required": [
+          "at",
+          "hostId"
+        ],
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "hostId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "SendRequest": {
+        "required": [
+          "to",
+          "cc",
+          "subject",
+          "body"
+        ],
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cc": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        }
       },
       "SetActiveRequest": {
         "required": [
@@ -3542,6 +4260,44 @@
             "format": "date-time"
           }
         }
+      },
+      "ViewingHostResponse": {
+        "required": [
+          "id",
+          "name",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "WriteNoteRequest": {
+        "required": [
+          "type",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/NoteType"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -3563,6 +4319,18 @@
     },
     {
       "name": "Packages"
+    },
+    {
+      "name": "Notes"
+    },
+    {
+      "name": "BookingMessages"
+    },
+    {
+      "name": "MessageTemplates"
+    },
+    {
+      "name": "Outbox"
     },
     {
       "name": "Me"

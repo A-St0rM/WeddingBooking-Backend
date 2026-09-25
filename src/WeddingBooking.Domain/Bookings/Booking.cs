@@ -43,6 +43,11 @@ public sealed class Booking
     /// <summary>The quote and invoice numbers the accounting system gave back. Numbers only.</summary>
     public IReadOnlyList<AccountingReference> AccountingReferences => _references;
 
+    /// <summary>When the couple is shown round, and by whom (normally Bryan).</summary>
+    public DateTimeOffset? ViewingAt { get; private set; }
+
+    public Guid? ViewingHostId { get; private set; }
+
     /// <summary>
     /// Johan's own words for the agreement: what is included in practice, what is
     /// left out for now. Kept on the booking; each generated version copies it.
@@ -157,6 +162,15 @@ public sealed class Booking
     public void RemoveLine(Guid lineId)
     {
         _lines.Remove(FindLine(lineId));
+        Touch();
+    }
+
+    /// <summary>Books a viewing. An inquiry moves on to "fremvisning aftalt".</summary>
+    public void ScheduleViewing(DateTimeOffset? at, Guid? hostId)
+    {
+        ViewingAt = at;
+        ViewingHostId = hostId;
+        if (at is not null && Stage == SalesStage.Inquiry) Stage = SalesStage.Viewing;
         Touch();
     }
 
