@@ -1408,43 +1408,6 @@
             }
           }
         }
-      },
-      "post": {
-        "tags": [
-          "Customers"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCustomerRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCustomerRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCustomerRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerDetailResponse"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/api/customers/{id}": {
@@ -1525,6 +1488,28 @@
         }
       }
     },
+    "/api/customers/incomplete": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncompleteCustomerResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/customers/{id}/contacts": {
       "post": {
         "tags": [
@@ -1545,17 +1530,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ContactRequest"
+                "$ref": "#/components/schemas/PartnerRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/ContactRequest"
+                "$ref": "#/components/schemas/PartnerRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/ContactRequest"
+                "$ref": "#/components/schemas/PartnerRequest"
               }
             }
           },
@@ -1604,17 +1589,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ContactRequest"
+                "$ref": "#/components/schemas/PartnerRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/ContactRequest"
+                "$ref": "#/components/schemas/PartnerRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/ContactRequest"
+                "$ref": "#/components/schemas/PartnerRequest"
               }
             }
           },
@@ -1632,46 +1617,9 @@
             }
           }
         }
-      },
-      "delete": {
-        "tags": [
-          "Customers"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "contactId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerDetailResponse"
-                }
-              }
-            }
-          }
-        }
       }
     },
-    "/api/customers/{id}/contacts/{contactId}/primary": {
+    "/api/customers/{id}/contacts/{contactId}/payer": {
       "post": {
         "tags": [
           "Customers"
@@ -3125,38 +3073,16 @@
           }
         }
       },
-      "ContactRequest": {
-        "required": [
-          "name",
-          "email",
-          "phone"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "phone": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
       "ContactResponse": {
         "required": [
           "id",
-          "name",
+          "position",
+          "firstName",
+          "lastName",
+          "fullName",
           "email",
           "phone",
-          "isPrimary"
+          "isPayer"
         ],
         "type": "object",
         "properties": {
@@ -3164,7 +3090,20 @@
             "type": "string",
             "format": "uuid"
           },
-          "name": {
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fullName": {
             "type": "string"
           },
           "email": {
@@ -3179,7 +3118,7 @@
               "string"
             ]
           },
-          "isPrimary": {
+          "isPayer": {
             "type": "boolean"
           }
         }
@@ -3204,7 +3143,7 @@
       "CreateBookingRequest": {
         "required": [
           "customerId",
-          "customerName",
+          "partners",
           "eventDate",
           "guestCount",
           "paymentTerms"
@@ -3218,11 +3157,14 @@
             ],
             "format": "uuid"
           },
-          "customerName": {
+          "partners": {
             "type": [
               "null",
-              "string"
-            ]
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PartnerRequest"
+            }
           },
           "eventDate": {
             "type": "string",
@@ -3241,17 +3183,6 @@
                 "$ref": "#/components/schemas/PaymentTerms"
               }
             ]
-          }
-        }
-      },
-      "CreateCustomerRequest": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
           }
         }
       },
@@ -3359,7 +3290,7 @@
           "id",
           "name",
           "city",
-          "primaryContact",
+          "payer",
           "bookingCount",
           "nextEventDate"
         ],
@@ -3378,7 +3309,7 @@
               "string"
             ]
           },
-          "primaryContact": {
+          "payer": {
             "oneOf": [
               {
                 "type": "null"
@@ -3580,6 +3511,31 @@
           "skipped": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "IncompleteCustomerResponse": {
+        "required": [
+          "id",
+          "name",
+          "people",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "people": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reason": {
+            "type": "string"
           }
         }
       },
@@ -4021,6 +3977,38 @@
             "items": {
               "$ref": "#/components/schemas/PackageLineResponse"
             }
+          }
+        }
+      },
+      "PartnerRequest": {
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4587,16 +4575,12 @@
       },
       "UpdateCustomerRequest": {
         "required": [
-          "name",
           "address",
           "postalCode",
           "city"
         ],
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
           "address": {
             "type": [
               "null",

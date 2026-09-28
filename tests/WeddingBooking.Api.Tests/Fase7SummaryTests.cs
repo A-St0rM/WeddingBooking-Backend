@@ -27,7 +27,7 @@ public sealed class Fase7SummaryTests(ApiFactory api)
     public async Task A_booking_summary_takes_its_numbers_from_the_booking_and_is_not_stored()
     {
         var pkg = (await Manager.GetJsonAsync("/api/packages?year=2026")).AsArray().First(p => p!["kind"].Str() == "Base")!;
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Resumé Par", eventDate = "2028-06-17", guestCount = 94 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Resumé Par"), eventDate = "2028-06-17", guestCount = 94 });
         var id = booking["id"].Str();
         await Manager.PostJsonAsync($"/api/bookings/{id}/packages", new { packageId = pkg["id"].Str() });
         await Manager.PostJsonAsync($"/api/bookings/{id}/notes", new { type = "Email", text = "Vi bliver nok omkring 80 gæster. Vi vender tilbage om morgenmad." });

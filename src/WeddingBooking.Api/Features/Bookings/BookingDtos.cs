@@ -66,9 +66,9 @@ public sealed record PriceResponse(IReadOnlyList<PricedLineResponse> Lines, deci
 public sealed record AddPackageRequest(Guid PackageId);
 
 public sealed record CreateBookingRequest(
-    // An existing customer. Leave empty and give CustomerName to create one.
+    // An existing customer. Leave empty and give the two people to create one.
     Guid? CustomerId,
-    [MaxLength(200)] string? CustomerName,
+    [MaxLength(2)] IReadOnlyList<PartnerRequest>? Partners,
     [Required] DateOnly EventDate,
     [Range(1, Booking.MaxGuests)] int GuestCount,
     PaymentTerms? PaymentTerms);

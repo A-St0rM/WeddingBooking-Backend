@@ -55,6 +55,7 @@ public static partial class TrelloCardInterpreter
         else if (date is null) skip = "Ingen bryllupsdato: hverken forfaldsdato, datofelt eller en dato i navn eller beskrivelse.";
         else if (guests is null) skip = "Intet gæsteantal: skriv fx \"80 pax\" i kortets navn eller beskrivelse.";
         else if (guests is < 1 or > 350) skip = $"Gæsteantallet {guests} ligger uden for 1–350.";
+        else if (Customers.Customer.SplitCouple(couple) is null) skip = "Parrets navn kan ikke deles i to personer: skriv fx \"Tobias & Cecilie\" i kortets navn.";
 
         return new CardReading(
             card.Id, card.Name, couple, date, guests,

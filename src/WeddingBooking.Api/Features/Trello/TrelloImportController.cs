@@ -126,13 +126,12 @@ public sealed class TrelloImportController(AppDbContext db, ITrelloGateway trell
                     continue;
                 }
 
-                var customer = existing ?? Customer.Create(reading.CoupleName ?? card.Name);
+                var customer = existing ?? NewCustomer(reading);
                 if (existing is null)
                 {
                     db.Customers.Add(customer);
                     customers.Add(customer);
                 }
-                AddContacts(customer, reading);
 
                 var booking = Booking.Create(customer, reading.EventDate!.Value, reading.GuestCount!.Value, PaymentTerms.New, settings?.Surcharge);
                 booking.RecordTrelloOrigin(card.Id);
@@ -167,18 +166,13 @@ public sealed class TrelloImportController(AppDbContext db, ITrelloGateway trell
     private static bool IsConfirmed(string listName) =>
         new[] { "bekræft", "underskrev", "booket", "afholdt", "klar" }.Any(w => listName.Contains(w, StringComparison.OrdinalIgnoreCase));
 
-    private static void AddContacts(Customer customer, CardReading reading)
+    /// <summary>The couple from the card: the two names, the e-mails in the order they appear, the first phone number on the first.</summary>
+    private static Customer NewCustomer(CardReading reading)
     {
-        foreach (var email in reading.Emails.Where(e => customer.Contacts.All(c => c.Email != e)))
-        {
-            var local = email.Split('@')[0].Split('.', '_', '-')[0];
-            customer.AddContact(local.Length > 0 ? char.ToUpperInvariant(local[0]) + local[1..] : customer.Name, email, null);
-        }
-        if (reading.Phones.Count > 0 && customer.Contacts.All(c => c.Phone is null))
-        {
-            if (customer.PrimaryContact is { } primary) customer.UpdateContact(primary.Id, primary.Name, primary.Email, reading.Phones[0]);
-            else customer.AddContact(customer.Name, null, reading.Phones[0]);
-        }
+        var (first, second) = Customer.SplitCouple(reading.CoupleName)!.Value;
+        return Customer.Create(
+            new PartnerDetails(first, null, reading.Emails.ElementAtOrDefault(0), reading.Phones.ElementAtOrDefault(0)),
+            new PartnerDetails(second, null, reading.Emails.ElementAtOrDefault(1), reading.Phones.ElementAtOrDefault(1)));
     }
 
     private static string ImportNote(TrelloBoard board, TrelloCard card, CardReading reading)

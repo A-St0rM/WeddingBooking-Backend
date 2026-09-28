@@ -15,7 +15,7 @@ public sealed class Fase3PaymentTests(ApiFactory api)
     public async Task Quote_then_fee_paid_is_date_secured_then_33_percent_and_final_payment()
     {
         var pkg = (await Manager.GetJsonAsync("/api/packages?year=2026")).AsArray().First(p => p!["kind"].Str() == "Base")!;
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Hele forløbet", eventDate = "2027-08-21", guestCount = 94 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Hele forløbet"), eventDate = "2027-08-21", guestCount = 94 });
         var id = booking["id"].Str();
         await Manager.PostJsonAsync($"/api/bookings/{id}/packages", new { packageId = pkg["id"].Str() });
         var payments = $"/api/bookings/{id}/payments";
@@ -50,7 +50,7 @@ public sealed class Fase3PaymentTests(ApiFactory api)
     public async Task Invoicing_the_same_instalment_twice_gives_one_invoice()
     {
         var pkg = (await Manager.GetJsonAsync("/api/packages?year=2026")).AsArray().First(p => p!["kind"].Str() == "Base")!;
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "To gange", eventDate = "2027-08-28", guestCount = 80 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("To gange"), eventDate = "2027-08-28", guestCount = 80 });
         var id = booking["id"].Str();
         await Manager.PostJsonAsync($"/api/bookings/{id}/packages", new { packageId = pkg["id"].Str() });
 

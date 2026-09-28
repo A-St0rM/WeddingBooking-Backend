@@ -57,7 +57,7 @@ public sealed class BookingMessagesController(AppDbContext db, IMessageSender se
         var subject = TemplateMerger.Merge(template.Subject, values);
         var body = TemplateMerger.Merge(template.Body, values);
 
-        var to = booking.Customer.Contacts.OrderByDescending(c => c.IsPrimary).Select(c => c.Email).OfType<string>().ToList();
+        var to = booking.Customer.Partners.Select(c => c.Email).OfType<string>().ToList();
         var cc = template.CcViewingHost && host?.Email is { } hostEmail ? [hostEmail] : new List<string>();
 
         return new MessageDraftResponse(template.Id, to, cc, subject.Text, body.Text,
@@ -91,7 +91,7 @@ public sealed class BookingMessagesController(AppDbContext db, IMessageSender se
 
     private Dictionary<string, string?> Values(Booking booking, Domain.Users.User? host)
     {
-        var primary = booking.Customer.PrimaryContact;
+        var payer = booking.Customer.Payer;
         var day = booking.EventDate.ToString("dddd 'den' d. MMMM yyyy", Danish);
         string? viewing = booking.ViewingAt is { } at
             ? TimeZoneInfo.ConvertTime(at, Denmark).ToString("dddd 'den' d. MMMM 'kl.' HH.mm", Danish)
@@ -100,7 +100,7 @@ public sealed class BookingMessagesController(AppDbContext db, IMessageSender se
         return new Dictionary<string, string?>
         {
             ["parret"] = booking.Customer.Name,
-            ["fornavn"] = primary?.Name.Split(' ')[0],
+            ["fornavn"] = payer?.FirstName,
             ["dato"] = day,
             ["gæster"] = booking.GuestCount.ToString(Danish),
             ["pris"] = booking.Lines.Count > 0 ? booking.Price().Total.ToString("N0", Danish) + " kr." : null,

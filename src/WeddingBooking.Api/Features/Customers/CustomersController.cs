@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using WeddingBooking.Api.Auth;
 using WeddingBooking.Api.Common;
 using WeddingBooking.Api.Features.Bookings;
+using WeddingBooking.Domain.Accounting;
 using WeddingBooking.Domain.Bookings;
+using WeddingBooking.Domain.Common;
 using WeddingBooking.Domain.Customers;
 using WeddingBooking.Infrastructure.Persistence;
 
@@ -11,7 +13,7 @@ namespace WeddingBooking.Api.Features.Customers;
 
 [ApiController]
 [Route("api/customers")]
-public sealed class CustomersController(AppDbContext db, BookingResponder responder) : ControllerBase
+public sealed class CustomersController(AppDbContext db, BookingResponder responder, IAccountingSystem accounting) : ControllerBase
 {
     /// <summary>Customers by name, contact name or e-mail — fast enough to call on every keystroke.</summary>
     [HttpGet]
@@ -20,16 +22,18 @@ public sealed class CustomersController(AppDbContext db, BookingResponder respon
         var query = db.Customers.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var pattern = Search.Contains(search);
-            query = query.Where(customer =>
-                EF.Functions.ILike(customer.Name, pattern)
-                || customer.Contacts.Any(contact =>
-                    EF.Functions.ILike(contact.Name, pattern) || EF.Functions.ILike(contact.Email!, pattern)));
+            foreach (var pattern in Search.CouplePatterns(search))
+            {
+                query = query.Where(customer => customer.Contacts.Any(contact =>
+                    EF.Functions.ILike(contact.FirstName, pattern)
+                    || EF.Functions.ILike(contact.LastName!, pattern)
+                    || EF.Functions.ILike(contact.Email!, pattern)));
+            }
         }
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var rows = await query
-            .OrderBy(customer => customer.Name)
+            .OrderBy(customer => customer.Contacts.Where(contact => contact.Position == 1).Select(contact => contact.FirstName).FirstOrDefault())
             .Take(string.IsNullOrWhiteSpace(search) ? 500 : 20)
             .Select(customer => new
             {
@@ -46,7 +50,7 @@ public sealed class CustomersController(AppDbContext db, BookingResponder respon
                 row.Customer.Id,
                 row.Customer.Name,
                 row.Customer.City,
-                row.Customer.PrimaryContact is { } primary ? ContactResponse.From(primary) : null,
+                row.Customer.Payer is { } payer ? ContactResponse.From(payer) : null,
                 row.BookingCount,
                 row.NextEventDate))
             .ToList();
@@ -60,34 +64,46 @@ public sealed class CustomersController(AppDbContext db, BookingResponder respon
         return await DetailAsync(customer, ct);
     }
 
-    [HttpPost, ManagementOnly]
-    public async Task<ActionResult<CustomerDetailResponse>> Create(CreateCustomerRequest request, CancellationToken ct)
+    /// <summary>Customers left over from before the couple was two people, and why each is not. The migration's report.</summary>
+    [HttpGet("incomplete"), ManagementOnly]
+    public async Task<IReadOnlyList<IncompleteCustomerResponse>> Incomplete(CancellationToken ct)
     {
-        var customer = Customer.Create(request.Name);
-        db.Customers.Add(customer);
-        await db.SaveChangesAsync(ct);
-        return CreatedAtAction(nameof(Get), new { id = customer.Id }, await DetailAsync(customer, ct));
+        var customers = await db.Customers.AsNoTracking().Where(c => c.Contacts.Count != 2 || c.Contacts.Count(p => p.IsPayer) != 1).ToListAsync(ct);
+        return customers.Select(c => new IncompleteCustomerResponse(c.Id, c.Name, c.Contacts.Count,
+                c.Contacts.Count < 2 ? "Navnet kunne ikke deles i to personer. Tilføj den anden person."
+                : c.Contacts.Count > 2 ? "Kunden har flere end to personer. Fjern dem, der ikke er parret."
+                : "Kunden har ingen betaler."))
+            .ToList();
     }
 
     [HttpPut("{id:guid}"), ManagementOnly]
     public Task<ActionResult<CustomerDetailResponse>> Update(Guid id, UpdateCustomerRequest request, CancellationToken ct) =>
-        ChangeAsync(id, customer => customer.UpdateDetails(request.Name, request.Address, request.PostalCode, request.City), ct);
+        ChangeAsync(id, customer => customer.UpdateAddress(request.Address, request.PostalCode, request.City), ct);
 
     [HttpPost("{id:guid}/contacts"), ManagementOnly]
-    public Task<ActionResult<CustomerDetailResponse>> AddContact(Guid id, ContactRequest request, CancellationToken ct) =>
-        ChangeAsync(id, customer => customer.AddContact(request.Name, request.Email, request.Phone), ct);
+    public Task<ActionResult<CustomerDetailResponse>> AddMissingPartner(Guid id, PartnerRequest request, CancellationToken ct) =>
+        ChangeAsync(id, customer => customer.AddMissingPartner(request.ToDetails()), ct);
 
     [HttpPut("{id:guid}/contacts/{contactId:guid}"), ManagementOnly]
-    public Task<ActionResult<CustomerDetailResponse>> UpdateContact(Guid id, Guid contactId, ContactRequest request, CancellationToken ct) =>
-        ChangeAsync(id, customer => customer.UpdateContact(contactId, request.Name, request.Email, request.Phone), ct);
+    public Task<ActionResult<CustomerDetailResponse>> UpdatePartner(Guid id, Guid contactId, PartnerRequest request, CancellationToken ct) =>
+        ChangeAsync(id, customer => customer.UpdatePartner(contactId, request.ToDetails()), ct);
 
-    [HttpPost("{id:guid}/contacts/{contactId:guid}/primary"), ManagementOnly]
-    public Task<ActionResult<CustomerDetailResponse>> MakePrimary(Guid id, Guid contactId, CancellationToken ct) =>
-        ChangeAsync(id, customer => customer.MakePrimary(contactId), ct);
+    /// <summary>Chooses who pays. Allowed until the first invoice is booked — after that the invoice carries a name.</summary>
+    [HttpPost("{id:guid}/contacts/{contactId:guid}/payer"), ManagementOnly]
+    public async Task<ActionResult<CustomerDetailResponse>> MakePayer(Guid id, Guid contactId, CancellationToken ct)
+    {
+        var invoices = await db.Bookings.Where(b => b.CustomerId == id)
+            .SelectMany(b => b.AccountingReferences)
+            .Where(r => r.Type == DocumentType.Invoice)
+            .Select(r => r.Number)
+            .ToListAsync(ct);
+        if (invoices.Count > 0 && (await accounting.GetDocumentsAsync(invoices, ct)).Any(d => d.Status != DocumentStatus.Draft))
+        {
+            throw new DomainException("Der er bogført en faktura i betalerens navn. Betaleren kan ikke skiftes derefter.");
+        }
 
-    [HttpDelete("{id:guid}/contacts/{contactId:guid}"), ManagementOnly]
-    public Task<ActionResult<CustomerDetailResponse>> RemoveContact(Guid id, Guid contactId, CancellationToken ct) =>
-        ChangeAsync(id, customer => customer.RemoveContact(contactId), ct);
+        return await ChangeAsync(id, customer => customer.MakePayer(contactId), ct);
+    }
 
     private async Task<ActionResult<CustomerDetailResponse>> ChangeAsync(Guid id, Action<Customer> change, CancellationToken ct)
     {

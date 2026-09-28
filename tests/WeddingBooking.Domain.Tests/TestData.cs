@@ -15,5 +15,5 @@ internal static class TestData
     ]);
 
     public static Booking Booking(int guests, DateOnly? date = null, PaymentTerms terms = PaymentTerms.New) =>
-        Bookings.Booking.Create(Customer.Create("Tobias og Cecilie"), date ?? new DateOnly(2027, 6, 12), guests, terms, Surcharge);
+        Bookings.Booking.Create(Customer.Create(new PartnerDetails("Tobias"), new PartnerDetails("Cecilie")), date ?? new DateOnly(2027, 6, 12), guests, terms, Surcharge);
 }

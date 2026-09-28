@@ -13,7 +13,7 @@ public sealed class Fase4AgreementTests(ApiFactory api)
     public async Task A_new_version_after_a_guest_change_keeps_the_old_one_and_a_signed_pdf_round_trips()
     {
         var pkg = (await Manager.GetJsonAsync("/api/packages?year=2026")).AsArray().First(p => p!["kind"].Str() == "Base")!;
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Aftale Par", eventDate = "2027-07-03", guestCount = 80 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Aftale Par"), eventDate = "2027-07-03", guestCount = 80 });
         var id = booking["id"].Str();
         booking = await Manager.PostJsonAsync($"/api/bookings/{id}/packages", new { packageId = pkg["id"].Str() });
         var agreement = $"/api/bookings/{id}/agreement";
@@ -47,7 +47,7 @@ public sealed class Fase4AgreementTests(ApiFactory api)
     [IntegrationFact]
     public async Task Something_that_is_not_a_pdf_is_refused()
     {
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Ikke PDF", eventDate = "2027-07-10", guestCount = 60 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Ikke PDF"), eventDate = "2027-07-10", guestCount = 60 });
         var versions = await Manager.PostJsonAsync($"/api/bookings/{booking["id"].Str()}/agreement/versions", new { clarification = (string?)null });
 
         using var form = new MultipartFormDataContent { { new ByteArrayContent("hello"u8.ToArray()), "file", "fake.pdf" } };
@@ -60,7 +60,7 @@ public sealed class Fase4AgreementTests(ApiFactory api)
     public async Task Attaching_to_a_quote_is_refused_once_it_has_been_sent()
     {
         var pkg = (await Manager.GetJsonAsync("/api/packages?year=2026")).AsArray().First(p => p!["kind"].Str() == "Base")!;
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Bilag Par", eventDate = "2027-07-17", guestCount = 70 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Bilag Par"), eventDate = "2027-07-17", guestCount = 70 });
         var id = booking["id"].Str();
         await Manager.PostJsonAsync($"/api/bookings/{id}/packages", new { packageId = pkg["id"].Str() });
         var quote = await Manager.PostJsonAsync($"/api/bookings/{id}/payments/quote");
