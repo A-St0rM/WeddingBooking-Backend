@@ -3,6 +3,7 @@ namespace WeddingBooking.Domain.Bookings;
 /// <summary>The one word staff see. Derived, never stored.</summary>
 public enum DisplayStatus
 {
+    Requested,
     Inquiry,
     Viewing,
     QuoteSent,
@@ -33,6 +34,7 @@ public static class BookingStatus
     {
         if (facts.Stage == SalesStage.Cancelled) return DisplayStatus.Cancelled;
         if (facts.Stage == SalesStage.Lost) return DisplayStatus.Lost;
+        if (facts.Stage == SalesStage.Requested) return DisplayStatus.Requested;
         if (facts.AnyInstalmentOverdue) return DisplayStatus.PaymentOverdue;
         if (facts.EventDate < facts.Today)
         {

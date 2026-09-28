@@ -33,6 +33,8 @@ public sealed class Booking
     public PaymentTerms PaymentTerms { get; private set; }
     public SalesStage Stage { get; private set; }
 
+    public BookingOrigin Origin { get; private set; }
+
     public IReadOnlyList<BookingLine> Lines => _lines;
 
     public IReadOnlyList<ReadinessItem> ReadinessItems => _readiness;
@@ -65,6 +67,43 @@ public sealed class Booking
 
     /// <summary>Postgres' xmin. Two people changing the guest count at once get a conflict, not a silent overwrite.</summary>
     public uint Version { get; private set; }
+
+    /// <summary>A date asked for from the website is held this long while it waits (§11.12).</summary>
+    public static readonly TimeSpan RequestHold = TimeSpan.FromDays(14);
+
+    /// <summary>
+    /// A request from the website: a viewing at a free time, or the wedding itself on a free date.
+    /// It waits for the event manager as *Ny bestilling* and holds its time or date meanwhile.
+    /// </summary>
+    public static Booking Request(Customer customer, DateOnly eventDate, int guestCount, SurchargeRule? surcharge, DateTimeOffset? viewingAt, Guid? hostId)
+    {
+        var booking = Create(customer, eventDate, guestCount, PaymentTerms.New, surcharge);
+        booking.Stage = SalesStage.Requested;
+        booking.Origin = BookingOrigin.Website;
+        booking.ViewingAt = viewingAt?.ToUniversalTime();
+        booking.ViewingHostId = hostId;
+        return booking;
+    }
+
+    /// <summary>Whether a request's date is still held for it.</summary>
+    public bool HoldsRequestedDate(DateTimeOffset now) =>
+        Stage == SalesStage.Requested && ViewingAt is null && now - CreatedAt < RequestHold;
+
+    /// <summary>Takes the request on: a viewing is booked, a date request becomes an inquiry like any other.</summary>
+    public void AcceptRequest()
+    {
+        if (Stage != SalesStage.Requested) throw new DomainException("Bookingen er ikke en ny bestilling.");
+        Stage = ViewingAt is null ? SalesStage.Inquiry : SalesStage.Viewing;
+        Touch();
+    }
+
+    /// <summary>Says no to the request. The time or date is freed.</summary>
+    public void DeclineRequest()
+    {
+        if (Stage != SalesStage.Requested) throw new DomainException("Bookingen er ikke en ny bestilling.");
+        Stage = SalesStage.Lost;
+        Touch();
+    }
 
     public static Booking Create(
         Customer customer, DateOnly eventDate, int guestCount, PaymentTerms terms = PaymentTerms.New, SurchargeRule? surcharge = null)
@@ -168,7 +207,11 @@ public sealed class Booking
         Touch();
     }
 
-    public void RecordTrelloOrigin(string cardId) => TrelloCardId = cardId;
+    public void RecordTrelloOrigin(string cardId)
+    {
+        TrelloCardId = cardId;
+        Origin = BookingOrigin.Trello;
+    }
 
     /// <summary>Sets a readiness item's status as it stood in Trello, bypassing role checks: it is the import, not a person.</summary>
     public void ImportReadiness(ReadinessCategory category, ReadinessStatus status)

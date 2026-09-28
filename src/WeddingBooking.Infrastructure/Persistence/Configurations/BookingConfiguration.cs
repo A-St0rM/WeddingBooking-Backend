@@ -19,6 +19,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
         builder.Property(booking => booking.PaymentTerms).HasConversion<string>().HasMaxLength(10);
         builder.Property(booking => booking.Stage).HasConversion<string>().HasMaxLength(20);
+        builder.Property(booking => booking.Origin).HasConversion<string>().HasMaxLength(20);
 
         // A uint row version maps to Postgres' system column xmin: no column to add.
         builder.Property(booking => booking.Version).IsRowVersion();

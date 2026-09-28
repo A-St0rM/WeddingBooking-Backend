@@ -6,6 +6,9 @@ namespace WeddingBooking.Domain.Bookings;
 /// </summary>
 public enum SalesStage
 {
+    /// <summary>Came in from the website and waits for the event manager. Holds its time or date meanwhile.</summary>
+    Requested,
+
     Inquiry,
     Viewing,
     QuoteSent,
@@ -20,8 +23,16 @@ public enum SalesStage
 public static class SalesStages
 {
     /// <summary>The stages someone may choose. Signed follows from the signed agreement.</summary>
-    public static bool IsManual(this SalesStage stage) => stage != SalesStage.Signed;
+    public static bool IsManual(this SalesStage stage) => stage is not (SalesStage.Signed or SalesStage.Requested);
 
     /// <summary>A booking that no longer holds its date.</summary>
     public static bool IsClosed(this SalesStage stage) => stage is SalesStage.Cancelled or SalesStage.Lost;
+}
+
+/// <summary>Where a case came from.</summary>
+public enum BookingOrigin
+{
+    Staff,
+    Website,
+    Trello,
 }
