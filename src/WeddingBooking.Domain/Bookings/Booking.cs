@@ -180,7 +180,7 @@ public sealed class Booking
     /// <summary>Books a viewing. An inquiry moves on to "fremvisning aftalt".</summary>
     public void ScheduleViewing(DateTimeOffset? at, Guid? hostId)
     {
-        ViewingAt = at;
+        ViewingAt = at?.ToUniversalTime();
         ViewingHostId = hostId;
         if (at is not null && Stage == SalesStage.Inquiry) Stage = SalesStage.Viewing;
         Touch();

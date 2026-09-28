@@ -294,6 +294,75 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("booking_lines", "app");
                 });
 
+            modelBuilder.Entity("WeddingBooking.Domain.Calendar.CalendarBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("End")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end");
+
+                    b.Property<Guid?>("HostId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("host_id");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTimeOffset>("Start")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_blocks");
+
+                    b.HasIndex("HostId")
+                        .HasDatabaseName("ix_calendar_blocks_host_id");
+
+                    b.HasIndex("Start")
+                        .HasDatabaseName("ix_calendar_blocks_start");
+
+                    b.ToTable("calendar_blocks", "app");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Calendar.HostAvailability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Day")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("day");
+
+                    b.Property<TimeOnly>("From")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("from");
+
+                    b.Property<Guid>("HostId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("host_id");
+
+                    b.Property<TimeOnly>("To")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("to");
+
+                    b.HasKey("Id")
+                        .HasName("pk_host_availability");
+
+                    b.HasIndex("HostId")
+                        .HasDatabaseName("ix_host_availability_host_id");
+
+                    b.ToTable("host_availability", "app");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Catalogue.Package", b =>
                 {
                     b.Property<Guid>("Id")
@@ -801,6 +870,25 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_booking_lines_bookings_booking_id");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Calendar.CalendarBlock", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_calendar_blocks_users_host_id");
+                });
+
+            modelBuilder.Entity("WeddingBooking.Domain.Calendar.HostAvailability", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_host_availability_users_host_id");
                 });
 
             modelBuilder.Entity("WeddingBooking.Domain.Catalogue.PackageLine", b =>

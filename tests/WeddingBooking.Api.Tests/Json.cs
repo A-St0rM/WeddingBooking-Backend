@@ -19,6 +19,13 @@ internal static class Json
     public static async Task<JsonNode> PutJsonAsync(this HttpClient client, string url, object body) =>
         await (await client.PutAsJsonAsync(url, body)).ReadAsync();
 
+    public static async Task<HttpResponseMessage> PutAsJsonAsyncOk(this HttpClient client, string url, object body)
+    {
+        var response = await client.PutAsJsonAsync(url, body);
+        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} PUT {url}: {await response.Content.ReadAsStringAsync()}");
+        return response;
+    }
+
     public static async Task<JsonNode> GetJsonAsync(this HttpClient client, string url) =>
         await (await client.GetAsync(url)).ReadAsync();
 
