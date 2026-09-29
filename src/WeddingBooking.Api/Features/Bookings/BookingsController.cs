@@ -22,10 +22,11 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
         var query = db.WithCustomer().AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var pattern = Search.Contains(search);
-            query = query.Where(booking =>
-                EF.Functions.ILike(booking.Customer.Name, pattern)
-                || booking.Customer.Contacts.Any(contact => EF.Functions.ILike(contact.Name, pattern)));
+            foreach (var pattern in Search.CouplePatterns(search))
+            {
+                query = query.Where(booking => booking.Customer.Contacts.Any(contact =>
+                    EF.Functions.ILike(contact.FirstName, pattern) || EF.Functions.ILike(contact.LastName!, pattern)));
+            }
         }
 
         if (!includePast)
@@ -72,7 +73,11 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
         }
         else
         {
-            customer = Customer.Create(request.CustomerName ?? throw new DomainException("Skriv parrets navn, eller vælg en eksisterende kunde."));
+            if (request.Partners is not [var first, var second])
+            {
+                throw new DomainException("Skriv begge personers navn, eller vælg en eksisterende kunde.");
+            }
+            customer = Customer.Create(first.ToDetails(), second.ToDetails());
             db.Customers.Add(customer);
         }
 

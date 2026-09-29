@@ -168,7 +168,7 @@ public sealed class AgreementsController(
             customer.Address,
             customer.PostalCode,
             customer.City,
-            customer.Contacts.OrderByDescending(c => c.IsPrimary).Select(c => new AgreementContact(c.Name, c.Email, c.Phone)).ToList(),
+            customer.Partners.Select(c => new AgreementContact(c.IsPayer ? $"{c.FullName} (betaler)" : c.FullName, c.Email, c.Phone)).ToList(),
             booking.EventDate,
             booking.GuestCount,
             lines,

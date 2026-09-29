@@ -1,12 +1,13 @@
+using System.Text.RegularExpressions;
 using WeddingBooking.Domain.Common;
 
 namespace WeddingBooking.Domain.Customers;
 
 /// <summary>
-/// The couple, as one party. Outlives its bookings: a couple who come back are
-/// the same customer, not a new one.
+/// The couple: two people, one of them the payer. Outlives its bookings — a
+/// couple who come back are the same customer, not a new one.
 /// </summary>
-public sealed class Customer
+public sealed partial class Customer
 {
     private readonly List<ContactPerson> _contacts = [];
 
@@ -14,12 +15,12 @@ public sealed class Customer
 
     public Guid Id { get; private set; }
 
-    /// <summary>How the couple is referred to — "Tobias og Cecilie".</summary>
-    public string Name { get; private set; } = string.Empty;
-
+    /// <summary>The payer's address — the one on the invoice.</summary>
     public string? Address { get; private set; }
+
     public string? PostalCode { get; private set; }
     public string? City { get; private set; }
+
     /// <summary>The customer number in the accounting system, once it has one. A reference, nothing more.</summary>
     public string? AccountingNumber { get; private set; }
 
@@ -27,18 +28,26 @@ public sealed class Customer
 
     public IReadOnlyList<ContactPerson> Contacts => _contacts;
 
-    public ContactPerson? PrimaryContact => _contacts.FirstOrDefault(contact => contact.IsPrimary);
+    /// <summary>The two, in the order they are named.</summary>
+    public IEnumerable<ContactPerson> Partners => _contacts.OrderBy(contact => contact.Position);
 
-    public static Customer Create(string name) => new()
-    {
-        Id = Guid.CreateVersion7(),
-        Name = Text.Required(name, "Kunden skal have et navn."),
-        CreatedAt = DateTimeOffset.UtcNow,
-    };
+    /// <summary>"Tobias og Cecilie" — worked out from the two first names, never stored.</summary>
+    public string Name => string.Join(" og ", Partners.Select(partner => partner.FirstName));
 
-    public void UpdateDetails(string name, string? address, string? postalCode, string? city)
+    public ContactPerson? Payer => _contacts.FirstOrDefault(contact => contact.IsPayer);
+
+    /// <summary>A new couple. The first named is the payer until someone chooses otherwise.</summary>
+    public static Customer Create(PartnerDetails first, PartnerDetails second)
     {
-        Name = Text.Required(name, "Kunden skal have et navn.");
+        var customer = new Customer { Id = Guid.CreateVersion7(), CreatedAt = DateTimeOffset.UtcNow };
+        customer._contacts.Add(ContactPerson.Create(customer.Id, 1, first));
+        customer._contacts.Add(ContactPerson.Create(customer.Id, 2, second));
+        customer._contacts[0].IsPayer = true;
+        return customer;
+    }
+
+    public void UpdateAddress(string? address, string? postalCode, string? city)
+    {
         Address = Text.Blank(address);
         PostalCode = Text.Blank(postalCode);
         City = Text.Blank(city);
@@ -46,39 +55,41 @@ public sealed class Customer
 
     public void RecordAccountingNumber(string number) => AccountingNumber = number;
 
-    /// <summary>Adds a contact. The first one added becomes the primary.</summary>
-    public ContactPerson AddContact(string name, string? email, string? phone)
+    /// <summary>For a customer from before the couple was two people: adds the one missing.</summary>
+    public ContactPerson AddMissingPartner(PartnerDetails details)
     {
-        var contact = ContactPerson.Create(Id, name, email, phone);
-        contact.IsPrimary = _contacts.Count == 0;
-        _contacts.Add(contact);
-        return contact;
+        if (_contacts.Count >= 2) throw new DomainException("Kunden har allerede to personer.");
+        var person = ContactPerson.Create(Id, _contacts.Count == 0 ? 1 : _contacts.Max(c => c.Position) + 1, details);
+        person.IsPayer = _contacts.Count == 0;
+        _contacts.Add(person);
+        return person;
     }
 
-    public void UpdateContact(Guid contactId, string name, string? email, string? phone) =>
-        Find(contactId).Update(name, email, phone);
+    public void UpdatePartner(Guid contactId, PartnerDetails details) => Find(contactId).Update(details);
 
-    public void MakePrimary(Guid contactId)
+    /// <summary>Makes this person the payer. Whether that is still allowed — no invoice booked yet — is decided by the caller, who can ask the accounting system.</summary>
+    public void MakePayer(Guid contactId)
     {
         var chosen = Find(contactId);
         foreach (var contact in _contacts)
         {
-            contact.IsPrimary = contact == chosen;
+            contact.IsPayer = contact == chosen;
         }
     }
 
-    /// <summary>Removes a contact; if it was the primary, the next one takes over.</summary>
-    public void RemoveContact(Guid contactId)
+    /// <summary>"Tobias & Cecilie" → ("Tobias", "Cecilie"). Null when the name is not two people joined by og, & or +.</summary>
+    public static (string First, string Second)? SplitCouple(string? name)
     {
-        var contact = Find(contactId);
-        _contacts.Remove(contact);
-        if (contact.IsPrimary && _contacts.Count > 0)
-        {
-            _contacts[0].IsPrimary = true;
-        }
+        var parts = CoupleSeparator().Split(name?.Trim() ?? "");
+        return parts is [var first, var second] && first.Trim().Length > 0 && second.Trim().Length > 0
+            ? (first.Trim(), second.Trim())
+            : null;
     }
 
     private ContactPerson Find(Guid contactId) =>
         _contacts.FirstOrDefault(contact => contact.Id == contactId)
-        ?? throw new DomainException("Kontaktpersonen findes ikke på kunden.");
+        ?? throw new DomainException("Personen findes ikke på kunden.");
+
+    [GeneratedRegex(@"\s+(?:og|&|\+)\s+|\s*[&+]\s*", RegexOptions.IgnoreCase)]
+    private static partial Regex CoupleSeparator();
 }

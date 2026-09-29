@@ -22,6 +22,17 @@ internal static class Json
     public static async Task<JsonNode> GetJsonAsync(this HttpClient client, string url) =>
         await (await client.GetAsync(url)).ReadAsync();
 
+    /// <summary>The two people for a new booking: "Tobias og Cecilie" → Tobias and Cecilie; one word gets a second person.</summary>
+    public static object[] Couple(string name, string? firstEmail = null)
+    {
+        var parts = name.Split(" og ", 2);
+        return
+        [
+            new { firstName = parts[0], lastName = (string?)null, email = firstEmail, phone = (string?)null },
+            new { firstName = parts.Length > 1 ? parts[1] : "Partner", lastName = (string?)null, email = (string?)null, phone = (string?)null },
+        ];
+    }
+
     public static decimal Dec(this JsonNode? node) => node!.GetValue<decimal>();
     public static string Str(this JsonNode? node) => node!.GetValue<string>();
 

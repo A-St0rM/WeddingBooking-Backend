@@ -13,9 +13,10 @@ public sealed class Fase6CommunicationTests(ApiFactory api)
     public async Task The_viewing_confirmation_has_the_host_on_cc_and_their_phone_in_the_text_and_is_logged_when_sent()
     {
         var bryan = await Manager.PostJsonAsync("/api/users", new { email = "bryan6@test.dk", name = "Bryan", role = "EventProducer", phone = "22 33 44 55" });
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Mail Par", eventDate = "2027-10-02", guestCount = 70 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Mail Par"), eventDate = "2027-10-02", guestCount = 70 });
         var id = booking["id"].Str();
-        await Manager.PostJsonAsync($"/api/customers/{booking["customer"]!["id"].Str()}/contacts", new { name = "Tobias", email = "tobias6@example.dk", phone = (string?)null });
+        var first = booking["customer"]!["contacts"]![0]!["id"].Str();
+        await Manager.PutJsonAsync($"/api/customers/{booking["customer"]!["id"].Str()}/contacts/{first}", new { firstName = "Tobias", lastName = (string?)null, email = "tobias6@example.dk", phone = (string?)null });
         var viewing = await Manager.PutJsonAsync($"/api/bookings/{id}/viewing", new { at = "2027-03-02T13:00:00Z", hostId = bryan["id"].Str() });
         Assert.Equal("Viewing", viewing["stage"].Str());
 
@@ -50,7 +51,7 @@ public sealed class Fase6CommunicationTests(ApiFactory api)
     [IntegrationFact]
     public async Task Staff_write_notes_and_only_management_sends_mail()
     {
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = "Note Par", eventDate = "2027-10-09", guestCount = 70 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple("Note Par"), eventDate = "2027-10-09", guestCount = 70 });
         var id = booking["id"].Str();
         var producer = await api.StaffAsync("bryan6b@test.dk", Role.EventProducer);
 

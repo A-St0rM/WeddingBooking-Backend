@@ -403,20 +403,29 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(320)")
                         .HasColumnName("email");
 
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_primary");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
+
+                    b.Property<bool>("IsPayer")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_payer");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_name");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)")
                         .HasColumnName("phone");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
 
                     b.HasKey("Id")
                         .HasName("pk_contact_persons");
@@ -451,12 +460,6 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(10)

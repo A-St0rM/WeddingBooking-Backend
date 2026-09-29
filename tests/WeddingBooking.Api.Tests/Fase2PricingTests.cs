@@ -12,7 +12,7 @@ public sealed class Fase2PricingTests(ApiFactory api)
 
     private async Task<JsonNode> BookingWithBaseAsync(string name, int guests, string packageId)
     {
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = name, eventDate = "2027-09-04", guestCount = guests });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple(name), eventDate = "2027-09-04", guestCount = guests });
         return await Manager.PostJsonAsync($"/api/bookings/{booking["id"].Str()}/packages", new { packageId });
     }
 

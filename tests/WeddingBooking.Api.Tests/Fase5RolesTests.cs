@@ -15,7 +15,7 @@ public sealed class Fase5RolesTests(ApiFactory api)
     private async Task<string> PricedBookingAsync(string name)
     {
         var pkg = (await Manager.GetJsonAsync("/api/packages?year=2026")).AsArray().First(p => p!["kind"].Str() == "Base")!;
-        var booking = await Manager.PostJsonAsync("/api/bookings", new { customerName = name, eventDate = "2027-09-11", guestCount = 55 });
+        var booking = await Manager.PostJsonAsync("/api/bookings", new { partners = Json.Couple(name), eventDate = "2027-09-11", guestCount = 55 });
         await Manager.PostJsonAsync($"/api/bookings/{booking["id"].Str()}/packages", new { packageId = pkg["id"].Str() });
         return booking["id"].Str();
     }

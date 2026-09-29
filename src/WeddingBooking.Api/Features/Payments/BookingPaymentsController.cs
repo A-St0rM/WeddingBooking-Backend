@@ -124,9 +124,10 @@ public sealed class BookingPaymentsController(AppDbContext db, IAccountingSystem
     private async Task<string> UpsertCustomerAsync(Booking booking, CancellationToken ct)
     {
         var customer = booking.Customer;
-        var primary = customer.PrimaryContact;
+        // The payer is the accounting system's customer: their name and the address go on the quote and the invoice.
+        var payer = customer.Payer ?? throw new DomainException("Vælg, hvem af de to der betaler, før der laves tilbud eller faktura.");
         var number = await accounting.UpsertCustomerAsync(new AccountingCustomer(
-            customer.Id.ToString(), customer.Name, customer.Address, customer.PostalCode, customer.City, primary?.Email, primary?.Phone), ct);
+            customer.Id.ToString(), payer.FullName, customer.Address, customer.PostalCode, customer.City, payer.Email, payer.Phone), ct);
         customer.RecordAccountingNumber(number);
         return number;
     }
