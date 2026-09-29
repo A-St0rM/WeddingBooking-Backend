@@ -477,6 +477,61 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("WeddingBooking.Domain.Readiness.ReadinessItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Responsible")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("responsible");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_readiness_items");
+
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("ix_readiness_items_booking_id");
+
+                    b.ToTable("readiness_items", "app");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -648,11 +703,23 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_contact_persons_customers_customer_id");
                 });
 
+            modelBuilder.Entity("WeddingBooking.Domain.Readiness.ReadinessItem", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Bookings.Booking", null)
+                        .WithMany("ReadinessItems")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_readiness_items_bookings_booking_id");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Bookings.Booking", b =>
                 {
                     b.Navigation("AccountingReferences");
 
                     b.Navigation("Lines");
+
+                    b.Navigation("ReadinessItems");
                 });
 
             modelBuilder.Entity("WeddingBooking.Domain.Catalogue.Package", b =>
