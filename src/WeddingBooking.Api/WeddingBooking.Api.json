@@ -1,0 +1,92 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "WeddingBooking.Api | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "WeddingBooking.Api"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MeResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "Role": {
+        "enum": [
+          "EventManager",
+          "Owner",
+          "Bookkeeper",
+          "Chef",
+          "EventProducer"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "WeddingBooking.Api"
+    },
+    {
+      "name": "Me"
+    }
+  ]
+}

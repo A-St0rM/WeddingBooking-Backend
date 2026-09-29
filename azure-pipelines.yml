@@ -25,6 +25,14 @@ steps:
       packageType: sdk
       version: '10.0.x'
 
+  # The rules that decide what a couple is charged. A red test stops the deploy.
+  - task: DotNetCoreCLI@2
+    displayName: Domain tests
+    inputs:
+      command: test
+      projects: tests/WeddingBooking.Domain.Tests/WeddingBooking.Domain.Tests.csproj
+      arguments: '--configuration $(buildConfiguration)'
+
   # publishWebProjects defaults to true and would pick up every project in the
   # solution. This repo has four, plus two test projects; naming the API
   # explicitly is what stops the wrong one being deployed.
