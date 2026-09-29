@@ -43,6 +43,9 @@ public sealed class Booking
     /// <summary>The quote and invoice numbers the accounting system gave back. Numbers only.</summary>
     public IReadOnlyList<AccountingReference> AccountingReferences => _references;
 
+    /// <summary>The Trello card this booking was imported from. Importing it again finds this and skips.</summary>
+    public string? TrelloCardId { get; private set; }
+
     /// <summary>When the couple is shown round, and by whom (normally Bryan).</summary>
     public DateTimeOffset? ViewingAt { get; private set; }
 
@@ -163,6 +166,15 @@ public sealed class Booking
     {
         _lines.Remove(FindLine(lineId));
         Touch();
+    }
+
+    public void RecordTrelloOrigin(string cardId) => TrelloCardId = cardId;
+
+    /// <summary>Sets a readiness item's status as it stood in Trello, bypassing role checks: it is the import, not a person.</summary>
+    public void ImportReadiness(ReadinessCategory category, ReadinessStatus status)
+    {
+        var item = _readiness.FirstOrDefault(i => i.Category == category);
+        item?.Update(status, item.Notes, item.Responsible, "Trello-import");
     }
 
     /// <summary>Books a viewing. An inquiry moves on to "fremvisning aftalt".</summary>

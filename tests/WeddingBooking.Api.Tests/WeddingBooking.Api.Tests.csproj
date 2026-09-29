@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\src\WeddingBooking.Api\WeddingBooking.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="TrelloExports/*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

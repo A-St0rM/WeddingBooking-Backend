@@ -172,6 +172,11 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("stage");
 
+                    b.Property<string>("TrelloCardId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("trello_card_id");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -212,6 +217,10 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EventDate")
                         .HasDatabaseName("ix_bookings_event_date");
+
+                    b.HasIndex("TrelloCardId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_bookings_trello_card_id");
 
                     b.HasIndex("ViewingHostId")
                         .HasDatabaseName("ix_bookings_viewing_host_id");
