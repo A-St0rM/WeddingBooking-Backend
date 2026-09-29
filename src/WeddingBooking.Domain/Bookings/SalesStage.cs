@@ -29,6 +29,13 @@ public static class SalesStages
     public static bool IsClosed(this SalesStage stage) => stage is SalesStage.Cancelled or SalesStage.Lost;
 }
 
+/// <summary>What the case is: a viewing that may become a wedding, or the wedding itself.</summary>
+public enum BookingKind
+{
+    Viewing,
+    Wedding,
+}
+
 /// <summary>Where a case came from.</summary>
 public enum BookingOrigin
 {

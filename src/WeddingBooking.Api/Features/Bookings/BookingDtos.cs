@@ -28,6 +28,7 @@ public sealed record BookingResponse(
     PaymentTerms PaymentTerms,
     SalesStage Stage,
     BookingOrigin Origin,
+    BookingKind Kind,
     // The one word staff see, worked out from the stage, the payments and the readiness.
     DisplayStatus Status,
     DateTimeOffset? SignedAt,
@@ -83,6 +84,12 @@ public sealed record UpdateBookingRequest(
 public sealed record ChangeStageRequest(SalesStage Stage);
 
 public sealed record ViewingHostResponse(Guid Id, string Name, string? Phone);
+
+public sealed record ConfirmAsWeddingRequest(
+    [Required] DateOnly EventDate,
+    [Range(1, Booking.MaxGuests)] int GuestCount,
+    PaymentTerms PaymentTerms,
+    Guid PayerId);
 
 public sealed record DeclineRequest([System.ComponentModel.DataAnnotations.MaxLength(2000)] string? Reason);
 

@@ -2584,7 +2584,57 @@
         }
       }
     },
-    "/api/bookings/{id}/request/decline": {
+    "/api/bookings/{id}/confirm-as-wedding": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmAsWeddingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmAsWeddingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmAsWeddingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/decline": {
       "post": {
         "tags": [
           "Bookings"
@@ -3216,6 +3266,12 @@
           }
         }
       },
+      "BookingKind": {
+        "enum": [
+          "Viewing",
+          "Wedding"
+        ]
+      },
       "BookingLineResponse": {
         "required": [
           "id",
@@ -3275,6 +3331,7 @@
           "paymentTerms",
           "stage",
           "origin",
+          "kind",
           "status",
           "signedAt",
           "viewingAt",
@@ -3309,6 +3366,9 @@
           },
           "origin": {
             "$ref": "#/components/schemas/BookingOrigin"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/BookingKind"
           },
           "status": {
             "$ref": "#/components/schemas/DisplayStatus"
@@ -3629,6 +3689,32 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ConfirmAsWeddingRequest": {
+        "required": [
+          "eventDate",
+          "guestCount",
+          "paymentTerms",
+          "payerId"
+        ],
+        "type": "object",
+        "properties": {
+          "eventDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "guestCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentTerms": {
+            "$ref": "#/components/schemas/PaymentTerms"
+          },
+          "payerId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },

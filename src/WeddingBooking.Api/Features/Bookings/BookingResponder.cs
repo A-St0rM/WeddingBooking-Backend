@@ -34,6 +34,7 @@ public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser, B
             booking.PaymentTerms,
             booking.Stage,
             booking.Origin,
+            booking.Kind,
             StatusOf(booking, payments),
             booking.SignedAt,
             booking.ViewingAt,

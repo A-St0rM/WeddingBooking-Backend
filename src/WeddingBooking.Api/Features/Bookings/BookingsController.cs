@@ -150,16 +150,30 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
         return await responder.RespondAsync(booking, ct);
     }
 
-    /// <summary>Says no to a request. Its time or date is freed, and why is kept in the history.</summary>
-    [HttpPost("{id:guid}/request/decline"), ManagementOnly]
+    /// <summary>
+    /// The couple said yes: the viewing (or a date request) becomes a wedding on the same case —
+    /// same customer, same two people, same history — and goes on to packages, quote and fee.
+    /// </summary>
+    [HttpPost("{id:guid}/confirm-as-wedding"), ManagementOnly]
+    public async Task<ActionResult<BookingResponse>> ConfirmAsWedding(Guid id, ConfirmAsWeddingRequest request, CancellationToken ct)
+    {
+        var booking = await db.WithCustomer().FirstOrDefaultAsync(b => b.Id == id, ct);
+        if (booking is null) return NotFound();
+        booking.ConfirmAsWedding(request.EventDate, request.GuestCount, request.PaymentTerms, request.PayerId);
+        await db.SaveChangesAsync(ct);
+        return await responder.RespondAsync(booking, ct);
+    }
+
+    /// <summary>Says no to a request or a viewing. Its time or date is freed, and why is kept in the history.</summary>
+    [HttpPost("{id:guid}/decline"), ManagementOnly]
     public async Task<ActionResult<BookingResponse>> DeclineRequest(Guid id, DeclineRequest request, [FromServices] CurrentUser currentUser, [FromServices] TimeProvider clock, CancellationToken ct)
     {
         var booking = await db.WithCustomer().FirstOrDefaultAsync(b => b.Id == id, ct);
         if (booking is null) return NotFound();
-        booking.DeclineRequest();
+        booking.Decline();
         var user = currentUser.User;
         db.Notes.Add(Domain.Notes.Note.Write(booking.Id, Domain.Notes.NoteType.Internal,
-            string.IsNullOrWhiteSpace(request.Reason) ? "Bestillingen fra hjemmesiden er afvist." : $"Bestillingen fra hjemmesiden er afvist: {request.Reason.Trim()}",
+            string.IsNullOrWhiteSpace(request.Reason) ? "Sagen er lukket som tabt." : $"Sagen er lukket som tabt: {request.Reason.Trim()}",
             user.Id, user.Name, clock.GetUtcNow()));
         await db.SaveChangesAsync(ct);
         return await responder.RespondAsync(booking, ct);

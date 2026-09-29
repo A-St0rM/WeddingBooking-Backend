@@ -63,7 +63,8 @@ public sealed class CalendarController(AppDbContext db, FreeTime freeTime, Curre
         var events = new List<CalendarEventResponse>();
         foreach (var booking in bookings)
         {
-            if (booking.EventDate >= from && booking.EventDate <= to)
+            // A viewing's wished date is only a wish; it is not a wedding in the calendar.
+            if (booking.Kind == BookingKind.Wedding && booking.EventDate >= from && booking.EventDate <= to)
             {
                 events.Add(new(CalendarEventKind.Wedding, FreeTime.DayStart(booking.EventDate), FreeTime.DayStart(booking.EventDate.AddDays(1)), true,
                     $"{booking.Customer.Name} · {booking.GuestCount} gæster", booking.Id, null, null, held.Contains(booking.Id)));
