@@ -36,6 +36,11 @@ public sealed class UnhandledExceptionMiddleware(RequestDelegate next, ILogger<U
         {
             await WriteAsync(context, StatusCodes.Status403Forbidden, "Ingen adgang", refusal.Message);
         }
+        catch (WeddingBooking.Integrations.Summaries.SummaryUnavailableException unavailable) when (!context.Response.HasStarted)
+        {
+            logger.LogWarning("Summary unavailable: {Reason}", unavailable.Message);
+            await WriteAsync(context, StatusCodes.Status503ServiceUnavailable, "Resuméet kunne ikke laves", unavailable.Message);
+        }
         catch (DbUpdateConcurrencyException) when (!context.Response.HasStarted)
         {
             await WriteAsync(context, StatusCodes.Status409Conflict, "Ændret af en anden",

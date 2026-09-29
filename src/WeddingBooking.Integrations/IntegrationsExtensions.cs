@@ -5,6 +5,7 @@ using WeddingBooking.Domain.Accounting;
 using WeddingBooking.Domain.Messages;
 using WeddingBooking.Integrations.Accounting.Simulated;
 using WeddingBooking.Integrations.Mail.Simulated;
+using WeddingBooking.Integrations.Summaries;
 
 namespace WeddingBooking.Integrations;
 
@@ -28,6 +29,17 @@ public static class IntegrationsExtensions
         services.AddDbContext<SimulatedMailDbContext>(options => ConfigureFor(options, SimulatedMailDbContext.Schema, connectionString));
         services.AddScoped<IMessageSender, SimulatedMessageSender>();
         services.AddScoped<SimulatedOutbox>();
+
+        // OpenAI when there is a key, the fixed adapter when there is not.
+        services.Configure<OpenAiOptions>(configuration.GetSection("OpenAI"));
+        if (!string.IsNullOrWhiteSpace(configuration["OpenAI:ApiKey"]))
+        {
+            services.AddHttpClient<Domain.Summaries.ISummariser, OpenAiSummariser>(client => client.Timeout = TimeSpan.FromSeconds(60));
+        }
+        else
+        {
+            services.AddSingleton<Domain.Summaries.ISummariser, OfflineSummariser>();
+        }
 
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         return services;

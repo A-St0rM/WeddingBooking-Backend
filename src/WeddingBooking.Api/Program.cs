@@ -19,6 +19,18 @@ builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Bookings.BookingResponder>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Payments.BookingFinance>();
 builder.Services.AddIntegrations(builder.Configuration);
+builder.Services.Configure<WeddingBooking.Api.Features.Summaries.SummaryOptions>(builder.Configuration.GetSection("Summary"));
+
+// The standalone summary page is open without login. A few calls a minute per
+// address is plenty for a person and useless for anyone draining the OpenAI account.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(WeddingBooking.Api.Features.Summaries.SummaryController.StandalonePolicy, context =>
+        System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+});
 
 builder.Services
     // One content type in the contract. Without this every response is described
@@ -84,6 +96,7 @@ app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseCors(FrontendCorsPolicy);
 app.UseMiddleware<UnhandledExceptionMiddleware>();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<KnownUserMiddleware>();
