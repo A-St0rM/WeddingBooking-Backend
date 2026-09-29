@@ -11,7 +11,7 @@ namespace WeddingBooking.Api.Features.Bookings;
 
 [ApiController]
 [Route("api/bookings")]
-public sealed class BookingsController(AppDbContext db, BookingResponder responder) : ControllerBase
+public sealed class BookingsController(AppDbContext db, BookingResponder responder, WeddingBooking.Api.Features.Trello.TrelloSync trello) : ControllerBase
 {
     /// <summary>Bookings, soonest first. Past and closed bookings only when asked for.</summary>
     [HttpGet]
@@ -101,7 +101,18 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
         db.Entry(booking).Property(b => b.Version).OriginalValue = request.Version;
         booking.Change(request.EventDate, request.GuestCount, request.PaymentTerms);
         await db.SaveChangesAsync(ct);
+        await trello.SyncBookingAsync(booking, ct);
 
+        return await responder.RespondAsync(booking, ct);
+    }
+
+    /// <summary>A Trello card for a booking made in the system, on the board for its year.</summary>
+    [HttpPost("{id:guid}/trello-card"), ManagementOnly]
+    public async Task<ActionResult<BookingResponse>> CreateTrelloCard(Guid id, CancellationToken ct)
+    {
+        var booking = await db.WithCustomer().FirstOrDefaultAsync(b => b.Id == id, ct);
+        if (booking is null) return NotFound();
+        await trello.CreateCardForBookingAsync(booking, ct);
         return await responder.RespondAsync(booking, ct);
     }
 
@@ -161,6 +172,7 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
         if (booking is null) return NotFound();
         booking.ConfirmAsWedding(request.EventDate, request.GuestCount, request.PaymentTerms, request.PayerId);
         await db.SaveChangesAsync(ct);
+        await trello.SyncBookingAsync(booking, ct);
         return await responder.RespondAsync(booking, ct);
     }
 

@@ -709,6 +709,15 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("title");
 
+                    b.Property<string>("TrelloCheckItemId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("trello_check_item_id");
+
+                    b.Property<bool?>("TrelloSyncedDone")
+                        .HasColumnType("boolean")
+                        .HasColumnName("trello_synced_done");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");

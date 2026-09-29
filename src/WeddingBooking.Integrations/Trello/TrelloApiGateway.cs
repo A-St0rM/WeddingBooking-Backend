@@ -11,6 +11,12 @@ public sealed class TrelloOptions
 
     /// <summary>The year boards shown under Trello — Bryllup 26, 27, 28.</summary>
     public string[] BoardIds { get; set; } = [];
+
+    /// <summary>The Trello app's secret: what Trello signs its webhooks with.</summary>
+    public string? AppSecret { get; set; }
+
+    /// <summary>Where Trello sends its webhooks — this API's public address + /api/trello/webhook.</summary>
+    public string? CallbackUrl { get; set; }
 }
 
 /// <summary>
@@ -39,5 +45,48 @@ internal sealed class TrelloApiGateway(HttpClient http, IOptions<TrelloOptions> 
         }
 
         return TrelloJson.Parse(await response.Content.ReadAsStringAsync(ct));
+    }
+
+    public async Task<string> CreateCardAsync(string listId, string name, string description, CancellationToken ct) =>
+        await IdOfAsync(HttpMethod.Post, "cards", new() { ["idList"] = listId, ["name"] = name, ["desc"] = description }, ct);
+
+    public async Task UpdateCardAsync(string cardId, string? name, string? description, string? listId, CancellationToken ct)
+    {
+        var fields = new Dictionary<string, string?> { ["name"] = name, ["desc"] = description, ["idList"] = listId }
+            .Where(f => f.Value is not null).ToDictionary(f => f.Key, f => f.Value!);
+        if (fields.Count > 0) await WriteAsync(HttpMethod.Put, $"cards/{Uri.EscapeDataString(cardId)}", fields, ct);
+    }
+
+    public Task<string> CreateChecklistAsync(string cardId, string name, CancellationToken ct) =>
+        IdOfAsync(HttpMethod.Post, $"cards/{Uri.EscapeDataString(cardId)}/checklists", new() { ["name"] = name }, ct);
+
+    public Task<string> AddCheckItemAsync(string checklistId, string name, bool complete, CancellationToken ct) =>
+        IdOfAsync(HttpMethod.Post, $"checklists/{Uri.EscapeDataString(checklistId)}/checkItems",
+            new() { ["name"] = name, ["checked"] = complete ? "true" : "false" }, ct);
+
+    public async Task SetCheckItemAsync(string cardId, string checkItemId, bool complete, CancellationToken ct) =>
+        await WriteAsync(HttpMethod.Put, $"cards/{Uri.EscapeDataString(cardId)}/checkItem/{Uri.EscapeDataString(checkItemId)}",
+            new() { ["state"] = complete ? "complete" : "incomplete" }, ct);
+
+    public async Task RegisterWebhookAsync(string boardId, string callbackUrl, CancellationToken ct) =>
+        await WriteAsync(HttpMethod.Post, "webhooks", new() { ["idModel"] = boardId, ["callbackURL"] = callbackUrl, ["description"] = "Bryllupsbooking" }, ct);
+
+    private async Task<string> IdOfAsync(HttpMethod method, string path, Dictionary<string, string> fields, CancellationToken ct)
+    {
+        var body = await WriteAsync(method, path, fields, ct);
+        return System.Text.Json.Nodes.JsonNode.Parse(body)?["id"]?.ToString()
+            ?? throw new DomainException("Trello svarede uden et id.");
+    }
+
+    /// <summary>Trello takes its parameters in the query string; the key and token go the same way.</summary>
+    private async Task<string> WriteAsync(HttpMethod method, string path, Dictionary<string, string> fields, CancellationToken ct)
+    {
+        if (!HasKey) throw new DomainException("Der kræves en Trello-nøgle og et token for at skrive til Trello.");
+        fields["key"] = options.Value.ApiKey!;
+        fields["token"] = options.Value.Token!;
+        var query = string.Join("&", fields.Select(f => $"{f.Key}={Uri.EscapeDataString(f.Value)}"));
+        using var response = await http.SendAsync(new HttpRequestMessage(method, $"https://api.trello.com/1/{path}?{query}"), ct);
+        if (!response.IsSuccessStatusCode) throw new DomainException($"Trello afviste ændringen ({(int)response.StatusCode}).");
+        return await response.Content.ReadAsStringAsync(ct);
     }
 }

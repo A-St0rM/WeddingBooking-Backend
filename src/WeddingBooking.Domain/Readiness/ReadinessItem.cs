@@ -40,6 +40,29 @@ public sealed class ReadinessItem
     public DateTimeOffset UpdatedAt { get; private set; }
     public string? UpdatedBy { get; private set; }
 
+    /// <summary>The item mirroring this one on the booking's Trello card.</summary>
+    public string? TrelloCheckItemId { get; private set; }
+
+    /// <summary>Done or not, as both sides agreed at the last sync. Null until first synced.</summary>
+    public bool? TrelloSyncedDone { get; private set; }
+
+    public bool IsDone => Status == ReadinessStatus.Done;
+
+    public void RecordTrelloSync(string checkItemId, bool done)
+    {
+        TrelloCheckItemId = checkItemId;
+        TrelloSyncedDone = done;
+    }
+
+    /// <summary>Takes the state from Trello: ticked is done; unticked leaves a done item in progress.</summary>
+    public void TakeTrelloState(bool done)
+    {
+        Status = done ? ReadinessStatus.Done : Status == ReadinessStatus.Done ? ReadinessStatus.InProgress : Status;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdatedBy = "Trello";
+        TrelloSyncedDone = done;
+    }
+
     internal static ReadinessItem Create(Guid bookingId, ReadinessCategory category, string title) => new()
     {
         Id = Guid.CreateVersion7(),

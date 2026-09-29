@@ -229,6 +229,9 @@ public sealed class Booking
         Touch();
     }
 
+    /// <summary>Ties the booking to a card made for it on Trello.</summary>
+    public void LinkTrelloCard(string cardId) => TrelloCardId = cardId;
+
     public void RecordTrelloOrigin(string cardId)
     {
         TrelloCardId = cardId;

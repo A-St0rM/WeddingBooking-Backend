@@ -96,5 +96,6 @@ internal sealed class ReadinessItemConfiguration : IEntityTypeConfiguration<Wedd
         builder.Property(item => item.Title).HasMaxLength(200);
         builder.Property(item => item.Responsible).HasMaxLength(200);
         builder.Property(item => item.UpdatedBy).HasMaxLength(200);
+        builder.Property(item => item.TrelloCheckItemId).HasMaxLength(64);
     }
 }

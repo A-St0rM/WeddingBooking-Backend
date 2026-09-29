@@ -31,7 +31,7 @@ public sealed record AddReadinessRequest(ReadinessCategory Category, [Required, 
 /// </summary>
 [ApiController]
 [Route("api/bookings/{id:guid}/readiness")]
-public sealed class ReadinessController(AppDbContext db, CurrentUser currentUser) : ControllerBase
+public sealed class ReadinessController(AppDbContext db, CurrentUser currentUser, WeddingBooking.Api.Features.Trello.TrelloSync trello) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<ReadinessResponse>> Get(Guid id, CancellationToken ct)
@@ -63,6 +63,7 @@ public sealed class ReadinessController(AppDbContext db, CurrentUser currentUser
         booking.EnsureReadiness();
         change(booking);
         await db.SaveChangesAsync(ct);
+        await trello.SyncBookingAsync(booking, ct);
         return Respond(booking);
     }
 
