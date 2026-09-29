@@ -1658,6 +1658,259 @@
         }
       }
     },
+    "/api/calendar": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CalendarEventResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calendar/slots": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "parameters": [
+          {
+            "name": "hostId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SlotResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calendar/wedding-dates": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calendar/availability": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HostWeekResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calendar/availability/{hostId}": {
+      "put": {
+        "tags": [
+          "Calendar"
+        ],
+        "parameters": [
+          {
+            "name": "hostId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WindowDto"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WindowDto"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WindowDto"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/calendar/blocks": {
+      "post": {
+        "tags": [
+          "Calendar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/calendar/blocks/{id}": {
+      "delete": {
+        "tags": [
+          "Calendar"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/bookings/{id}/packages": {
       "post": {
         "tags": [
@@ -2705,6 +2958,35 @@
           }
         }
       },
+      "BlockRequest": {
+        "required": [
+          "start",
+          "end",
+          "reason",
+          "hostId"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "BoardReport": {
         "required": [
           "name",
@@ -2934,6 +3216,69 @@
           },
           "paymentTerms": {
             "$ref": "#/components/schemas/PaymentTerms"
+          }
+        }
+      },
+      "CalendarEventKind": {
+        "enum": [
+          "Wedding",
+          "Viewing",
+          "Block"
+        ]
+      },
+      "CalendarEventResponse": {
+        "required": [
+          "kind",
+          "start",
+          "end",
+          "allDay",
+          "title",
+          "bookingId",
+          "blockId",
+          "hostName",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/CalendarEventKind"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "allDay": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          },
+          "bookingId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "blockId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "hostName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "confirmed": {
+            "type": "boolean"
           }
         }
       },
@@ -3332,6 +3677,17 @@
           }
         }
       },
+      "DayOfWeek": {
+        "enum": [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ]
+      },
       "DisplayStatus": {
         "enum": [
           "Inquiry",
@@ -3464,6 +3820,29 @@
           },
           "enableRangeProcessing": {
             "type": "boolean"
+          }
+        }
+      },
+      "HostWeekResponse": {
+        "required": [
+          "hostId",
+          "hostName",
+          "windows"
+        ],
+        "type": "object",
+        "properties": {
+          "hostId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hostName": {
+            "type": "string"
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WindowDto"
+            }
           }
         }
       },
@@ -4446,6 +4825,32 @@
           }
         }
       },
+      "SlotResponse": {
+        "required": [
+          "start",
+          "end",
+          "hostId",
+          "hostName"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hostId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hostName": {
+            "type": "string"
+          }
+        }
+      },
       "StandaloneSummaryRequest": {
         "required": [
           "text"
@@ -4722,6 +5127,27 @@
           }
         }
       },
+      "WindowDto": {
+        "required": [
+          "day",
+          "from",
+          "to"
+        ],
+        "type": "object",
+        "properties": {
+          "day": {
+            "$ref": "#/components/schemas/DayOfWeek"
+          },
+          "from": {
+            "type": "string",
+            "format": "time"
+          },
+          "to": {
+            "type": "string",
+            "format": "time"
+          }
+        }
+      },
       "WriteNoteRequest": {
         "required": [
           "type",
@@ -4781,6 +5207,9 @@
     },
     {
       "name": "Customers"
+    },
+    {
+      "name": "Calendar"
     },
     {
       "name": "BookingLines"

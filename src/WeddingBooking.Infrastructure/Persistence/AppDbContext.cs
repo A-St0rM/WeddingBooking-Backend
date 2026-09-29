@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WeddingBooking.Domain.Agreements;
 using WeddingBooking.Domain.Bookings;
+using WeddingBooking.Domain.Calendar;
 using WeddingBooking.Domain.Catalogue;
 using WeddingBooking.Domain.Messages;
 using WeddingBooking.Domain.Notes;
@@ -26,6 +27,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<PricingSettings> PricingSettings => Set<PricingSettings>();
     public DbSet<AgreementVersion> AgreementVersions => Set<AgreementVersion>();
     public DbSet<Note> Notes => Set<Note>();
+    public DbSet<HostAvailability> HostAvailability => Set<HostAvailability>();
+    public DbSet<CalendarBlock> CalendarBlocks => Set<CalendarBlock>();
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
