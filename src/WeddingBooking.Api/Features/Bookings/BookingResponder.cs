@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WeddingBooking.Api.Auth;
 using WeddingBooking.Api.Common;
 using WeddingBooking.Api.Features.Customers;
@@ -22,6 +23,9 @@ public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser, B
     {
         var sameDate = await SummariesAsync(await db.OnDateAsync(booking.EventDate, booking.Id, ct), ct);
         var payments = SeesPrices ? await finance.ForAsync(booking, ct) : null;
+        var host = booking.ViewingHostId is { } hostId
+            ? await db.Users.AsNoTracking().Where(u => u.Id == hostId).Select(u => new ViewingHostResponse(u.Id, u.Name, u.Phone)).FirstOrDefaultAsync(ct)
+            : null;
 
         return new BookingResponse(
             booking.Id,
@@ -31,6 +35,8 @@ public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser, B
             booking.Stage,
             StatusOf(booking, payments),
             booking.SignedAt,
+            booking.ViewingAt,
+            host,
             booking.CreatedAt,
             booking.UpdatedAt,
             booking.Version,

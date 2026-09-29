@@ -30,6 +30,8 @@ public sealed record BookingResponse(
     // The one word staff see, worked out from the stage, the payments and the readiness.
     DisplayStatus Status,
     DateTimeOffset? SignedAt,
+    DateTimeOffset? ViewingAt,
+    ViewingHostResponse? ViewingHost,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     // Send back unchanged when saving; a stale value means someone else saved first.
@@ -78,3 +80,7 @@ public sealed record UpdateBookingRequest(
     uint Version);
 
 public sealed record ChangeStageRequest(SalesStage Stage);
+
+public sealed record ViewingHostResponse(Guid Id, string Name, string? Phone);
+
+public sealed record ScheduleViewingRequest(DateTimeOffset? At, Guid? HostId);
