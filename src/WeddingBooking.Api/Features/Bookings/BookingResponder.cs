@@ -35,6 +35,7 @@ public sealed class BookingResponder(AppDbContext db, CurrentUser currentUser, B
             booking.Stage,
             booking.Origin,
             booking.Kind,
+            booking.TrelloCardId,
             StatusOf(booking, payments),
             booking.SignedAt,
             booking.ViewingAt,

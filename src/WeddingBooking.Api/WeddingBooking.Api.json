@@ -126,6 +126,57 @@
         }
       }
     },
+    "/api/trello/boards": {
+      "get": {
+        "tags": [
+          "TrelloBoard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BoardSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trello/boards/{boardId}": {
+      "get": {
+        "tags": [
+          "TrelloBoard"
+        ],
+        "parameters": [
+          {
+            "name": "boardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/trello/status": {
       "get": {
         "tags": [
@@ -3266,6 +3317,55 @@
           }
         }
       },
+      "BoardResponse": {
+        "required": [
+          "id",
+          "name",
+          "url",
+          "fetchedAt",
+          "lists"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListResponse"
+            }
+          }
+        }
+      },
+      "BoardSummaryResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "BookingKind": {
         "enum": [
           "Viewing",
@@ -3332,6 +3432,7 @@
           "stage",
           "origin",
           "kind",
+          "trelloCardId",
           "status",
           "signedAt",
           "viewingAt",
@@ -3369,6 +3470,12 @@
           },
           "kind": {
             "$ref": "#/components/schemas/BookingKind"
+          },
+          "trelloCardId": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
             "$ref": "#/components/schemas/DisplayStatus"
@@ -3641,6 +3748,66 @@
           }
         }
       },
+      "CardResponse": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "due",
+          "dueComplete",
+          "url",
+          "labels",
+          "checklists",
+          "bookingId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "due": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "dueComplete": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LabelResponse"
+            }
+          },
+          "checklists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistResponse"
+            }
+          },
+          "bookingId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "CaseSummary": {
         "required": [
           "status",
@@ -3675,6 +3842,39 @@
         "properties": {
           "stage": {
             "$ref": "#/components/schemas/SalesStage"
+          }
+        }
+      },
+      "CheckItemResponse": {
+        "required": [
+          "name",
+          "complete"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "complete": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ChecklistResponse": {
+        "required": [
+          "name",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckItemResponse"
+            }
           }
         }
       },
@@ -4302,6 +4502,21 @@
           "Overdue"
         ]
       },
+      "LabelResponse": {
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
       "LinePricing": {
         "enum": [
           "PerGuest",
@@ -4342,6 +4557,28 @@
               "integer"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "ListResponse": {
+        "required": [
+          "id",
+          "name",
+          "cards"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardResponse"
+            }
           }
         }
       },
@@ -5626,6 +5863,9 @@
     },
     {
       "name": "Users"
+    },
+    {
+      "name": "TrelloBoard"
     },
     {
       "name": "TrelloImport"

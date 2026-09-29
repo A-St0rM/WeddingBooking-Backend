@@ -29,6 +29,8 @@ public sealed record BookingResponse(
     SalesStage Stage,
     BookingOrigin Origin,
     BookingKind Kind,
+    // The Trello card the booking belongs to, if it has one.
+    string? TrelloCardId,
     // The one word staff see, worked out from the stage, the payments and the readiness.
     DisplayStatus Status,
     DateTimeOffset? SignedAt,

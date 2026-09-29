@@ -19,6 +19,7 @@ builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Bookings.BookingResponder>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Payments.BookingFinance>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Calendar.FreeTime>();
+builder.Services.AddSingleton<WeddingBooking.Api.Features.Trello.TrelloBoardCache>();
 builder.Services.AddIntegrations(builder.Configuration);
 builder.Services.Configure<WeddingBooking.Api.Features.Summaries.SummaryOptions>(builder.Configuration.GetSection("Summary"));
 
