@@ -1480,6 +1480,25 @@
         }
       }
     },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bookings/{id}/messages/draft": {
       "post": {
         "tags": [
@@ -1747,25 +1766,6 @@
                   "items": {
                     "$ref": "#/components/schemas/OutboxMessageResponse"
                   }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/me": {
-      "get": {
-        "tags": [
-          "Me"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MeResponse"
                 }
               }
             }
@@ -6225,6 +6225,9 @@
       "name": "Notes"
     },
     {
+      "name": "Me"
+    },
+    {
       "name": "BookingMessages"
     },
     {
@@ -6232,9 +6235,6 @@
     },
     {
       "name": "Outbox"
-    },
-    {
-      "name": "Me"
     },
     {
       "name": "Customers"
