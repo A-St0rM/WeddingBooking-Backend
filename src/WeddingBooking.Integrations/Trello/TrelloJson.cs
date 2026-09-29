@@ -71,7 +71,8 @@ public static class TrelloJson
     private static TrelloChecklist Checklist(JsonObject checklist) => new(
         Str(checklist, "name"),
         (checklist["checkItems"] as JsonArray ?? []).OfType<JsonObject>()
-            .Select(i => new TrelloCheckItem(Str(i, "name"), Str(i, "state") == "complete")).ToList());
+            .Select(i => new TrelloCheckItem(Str(i, "name"), Str(i, "state") == "complete", Str(i, "id"))).ToList(),
+        Str(checklist, "id"));
 
     private static string Str(JsonNode node, string key) => node[key]?.ToString() ?? "";
 

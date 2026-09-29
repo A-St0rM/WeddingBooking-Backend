@@ -13,7 +13,7 @@ ASP.NET Core-API'et til bryllupsbookingen på Engestofte Gods. Frontenden og pro
 - **Udregn, når der læses.** Linjetotaler, bookingens total, raternes beløb, "klar til afholdelse" og visningsstatus gemmes ikke. Gæsteantallet findes ét sted: på bookingen.
 - **Betalingsstatus læses gennem `IAccountingSystem`** hver gang. Bookingtabellerne gemmer kun referencer — kunde-, tilbuds- og fakturanumre.
 - **En regel, der afgør et beløb eller en status, bor i `Domain`** som en ren funktion, så den kan testes uden database.
-- **Hvert endepunkt kræver login** via fallback-politikken; kun `/health` melder fra. En indlogget uden række i `users` får 403 fra adgangs-middlewaren.
+- **Hvert endepunkt kræver login** via fallback-politikken. Kun `/health`, de offentlige forespørgsler, det selvstændige resumé og Trellos webhook (som kræver Trellos signatur) melder fra. En indlogget uden række i `users` får 403 fra adgangs-middlewaren.
 - **Pris- og betalingsfelter fjernes fra svaret** for rollerne `Chef` og `EventProducer`.
 - **Tabeller oprettes i skemaet `app`.** Supabase eksponerer `public` for alle med den offentlige nøgle.
 - **Læs hver genereret migration igennem, før den køres.** Flyttes data, skrives den i hånden: opret, tilføj nullable, flyt data, stram til, fjern det gamle.

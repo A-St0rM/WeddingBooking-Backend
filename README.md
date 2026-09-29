@@ -62,5 +62,7 @@ Et build skriver OpenAPI-beskrivelsen til `src/WeddingBooking.Api/WeddingBooking
 | `Summary__StandaloneEnabled` | `true` (standard) åbner `/api/summary/standalone` uden login, rate-begrænset. `false` lukker det. |
 | `Trello__BoardIds__0`, `__1`, … | Id på de Trello-boards, der vises under *Trello* (fx Bryllup 26, 27, 28). |
 | `Trello__ApiKey`, `Trello__Token` | Valgfri til at læse offentlige boards. Kræves for private boards og for at skrive til Trello (fase 15). |
+| `Trello__AppSecret` | Trellos app-hemmelighed; webhook-kald uden gyldig signatur afvises. |
+| `Trello__CallbackUrl` | Den offentlige adresse på `/api/trello/webhook`, præcis som registreret hos Trello (signaturen dækker den). |
 
 Health check: `/health`.

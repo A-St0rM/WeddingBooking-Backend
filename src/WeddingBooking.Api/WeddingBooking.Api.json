@@ -177,6 +177,185 @@
         }
       }
     },
+    "/api/trello/boards/{boardId}/lists/{listId}/cards": {
+      "post": {
+        "tags": [
+          "TrelloBoard"
+        ],
+        "parameters": [
+          {
+            "name": "boardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCardRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCardRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trello/boards/{boardId}/cards/{cardId}/list": {
+      "put": {
+        "tags": [
+          "TrelloBoard"
+        ],
+        "parameters": [
+          {
+            "name": "boardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveCardRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveCardRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveCardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trello/boards/{boardId}/cards/{cardId}/check-items/{checkItemId}": {
+      "put": {
+        "tags": [
+          "TrelloBoard"
+        ],
+        "parameters": [
+          {
+            "name": "boardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "checkItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckItemRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckItemRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/trello/status": {
       "get": {
         "tags": [
@@ -289,6 +468,47 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trello/webhook": {
+      "head": {
+        "tags": [
+          "TrelloWebhook"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TrelloWebhook"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/trello/webhooks": {
+      "post": {
+        "tags": [
+          "TrelloWebhookSetup"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhooksResponse"
                 }
               }
             }
@@ -2483,6 +2703,36 @@
         }
       }
     },
+    "/api/bookings/{id}/trello-card": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bookings/{id}/stage": {
       "put": {
         "tags": [
@@ -3323,6 +3573,7 @@
           "name",
           "url",
           "fetchedAt",
+          "canWrite",
           "lists"
         ],
         "type": "object",
@@ -3342,6 +3593,9 @@
           "fetchedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "canWrite": {
+            "type": "boolean"
           },
           "lists": {
             "type": "array",
@@ -3845,13 +4099,28 @@
           }
         }
       },
+      "CheckItemRequest": {
+        "required": [
+          "complete"
+        ],
+        "type": "object",
+        "properties": {
+          "complete": {
+            "type": "boolean"
+          }
+        }
+      },
       "CheckItemResponse": {
         "required": [
+          "id",
           "name",
           "complete"
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -3862,11 +4131,15 @@
       },
       "ChecklistResponse": {
         "required": [
+          "id",
           "name",
           "items"
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -4027,6 +4300,24 @@
               {
                 "$ref": "#/components/schemas/PaymentTerms"
               }
+            ]
+          }
+        }
+      },
+      "CreateCardRequest": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
             ]
           }
         }
@@ -4706,6 +4997,17 @@
           },
           "ccViewingHost": {
             "type": "boolean"
+          }
+        }
+      },
+      "MoveCardRequest": {
+        "required": [
+          "listId"
+        ],
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string"
           }
         }
       },
@@ -5784,6 +6086,31 @@
           }
         }
       },
+      "WebhooksResponse": {
+        "required": [
+          "callbackUrl",
+          "registered",
+          "refused"
+        ],
+        "type": "object",
+        "properties": {
+          "callbackUrl": {
+            "type": "string"
+          },
+          "registered": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "refused": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "WeddingRequest": {
         "required": [
           "people",
@@ -5869,6 +6196,12 @@
     },
     {
       "name": "TrelloImport"
+    },
+    {
+      "name": "TrelloWebhook"
+    },
+    {
+      "name": "TrelloWebhookSetup"
     },
     {
       "name": "Summary"
