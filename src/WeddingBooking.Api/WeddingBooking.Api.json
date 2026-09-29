@@ -73,6 +73,192 @@
         }
       }
     },
+    "/api/bookings/{id}/payments": {
+      "get": {
+        "tags": [
+          "BookingPayments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/payments/quote": {
+      "post": {
+        "tags": [
+          "BookingPayments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/payments/invoices": {
+      "post": {
+        "tags": [
+          "BookingPayments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/payments/invoices/{number}/book": {
+      "post": {
+        "tags": [
+          "BookingPayments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/payments/documents/{number}/pdf": {
+      "get": {
+        "tags": [
+          "BookingPayments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileContentResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/packages": {
       "get": {
         "tags": [
@@ -1125,6 +1311,92 @@
           }
         }
       }
+    },
+    "/api/accounting-sim/documents": {
+      "get": {
+        "tags": [
+          "AccountingSim"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SimDocumentSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounting-sim/documents/{number}/sent": {
+      "post": {
+        "tags": [
+          "AccountingSim"
+        ],
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/accounting-sim/documents/{number}/payments": {
+      "post": {
+        "tags": [
+          "AccountingSim"
+        ],
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPaymentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPaymentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1192,6 +1464,8 @@
           "guestCount",
           "paymentTerms",
           "stage",
+          "status",
+          "signedAt",
           "createdAt",
           "updatedAt",
           "version",
@@ -1219,6 +1493,16 @@
           },
           "stage": {
             "$ref": "#/components/schemas/SalesStage"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DisplayStatus"
+          },
+          "signedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
           "createdAt": {
             "type": "string",
@@ -1267,6 +1551,7 @@
           "customerId",
           "customerName",
           "stage",
+          "status",
           "paymentTerms"
         ],
         "type": "object",
@@ -1292,6 +1577,9 @@
           },
           "stage": {
             "$ref": "#/components/schemas/SalesStage"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DisplayStatus"
           },
           "paymentTerms": {
             "$ref": "#/components/schemas/PaymentTerms"
@@ -1439,6 +1727,17 @@
           }
         }
       },
+      "CreateInvoiceRequest": {
+        "required": [
+          "kind"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/InstalmentKind"
+          }
+        }
+      },
       "CustomerDetailResponse": {
         "required": [
           "customer",
@@ -1547,6 +1846,181 @@
             "format": "date"
           }
         }
+      },
+      "DisplayStatus": {
+        "enum": [
+          "Inquiry",
+          "Viewing",
+          "QuoteSent",
+          "Signed",
+          "DateSecured",
+          "ReadyForEvent",
+          "Held",
+          "AwaitingPostEventInvoice",
+          "PaymentOverdue",
+          "Cancelled",
+          "Lost"
+        ]
+      },
+      "DocumentResponse": {
+        "required": [
+          "number",
+          "type",
+          "status",
+          "amount",
+          "remaining",
+          "dueDate",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatus"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "remaining": {
+            "type": "number",
+            "format": "double"
+          },
+          "dueDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DocumentStatus": {
+        "enum": [
+          "Draft",
+          "Sent",
+          "Booked",
+          "Paid"
+        ]
+      },
+      "DocumentType": {
+        "enum": [
+          "Quote",
+          "Invoice"
+        ]
+      },
+      "EntityTagHeaderValue": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "$ref": "#/components/schemas/StringSegment"
+          },
+          "isWeak": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FileContentResult": {
+        "type": "object",
+        "properties": {
+          "fileContents": {
+            "type": "string",
+            "format": "byte"
+          },
+          "contentType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fileDownloadName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastModified": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "entityTag": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EntityTagHeaderValue"
+              }
+            ]
+          },
+          "enableRangeProcessing": {
+            "type": "boolean"
+          }
+        }
+      },
+      "InstalmentKind": {
+        "enum": [
+          "ReservationFee",
+          "Instalment",
+          "FinalPayment"
+        ]
+      },
+      "InstalmentResponse": {
+        "required": [
+          "kind",
+          "amount",
+          "dueDate",
+          "state",
+          "invoice"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/InstalmentKind"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "state": {
+            "$ref": "#/components/schemas/InstalmentState"
+          },
+          "invoice": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentResponse"
+              }
+            ]
+          }
+        }
+      },
+      "InstalmentState": {
+        "enum": [
+          "NotInvoiced",
+          "Draft",
+          "Booked",
+          "Paid",
+          "Overdue"
+        ]
       },
       "LinePricing": {
         "enum": [
@@ -1747,6 +2221,51 @@
           }
         }
       },
+      "PaymentsResponse": {
+        "required": [
+          "simulated",
+          "terms",
+          "total",
+          "customerNumber",
+          "quote",
+          "instalments"
+        ],
+        "type": "object",
+        "properties": {
+          "simulated": {
+            "type": "boolean"
+          },
+          "terms": {
+            "$ref": "#/components/schemas/PaymentTerms"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "customerNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "quote": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentResponse"
+              }
+            ]
+          },
+          "instalments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstalmentResponse"
+            }
+          }
+        }
+      },
       "PaymentTerms": {
         "enum": [
           "Old",
@@ -1859,6 +2378,26 @@
           "Other"
         ]
       },
+      "RegisterPaymentRequest": {
+        "required": [
+          "amount",
+          "paidOn"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paidOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          }
+        }
+      },
       "Role": {
         "enum": [
           "EventManager",
@@ -1885,6 +2424,98 @@
         "type": "object",
         "properties": {
           "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SimDocumentSummary": {
+        "required": [
+          "number",
+          "type",
+          "status",
+          "customerNumber",
+          "customerName",
+          "heading",
+          "amount",
+          "paid",
+          "remaining",
+          "dueDate",
+          "createdAt",
+          "attachmentCount"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatus"
+          },
+          "customerNumber": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "heading": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paid": {
+            "type": "number",
+            "format": "double"
+          },
+          "remaining": {
+            "type": "number",
+            "format": "double"
+          },
+          "dueDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attachmentCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StringSegment": {
+        "type": "object",
+        "properties": {
+          "buffer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "length": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasValue": {
             "type": "boolean"
           }
         }
@@ -1978,6 +2609,9 @@
       "name": "PricingSettings"
     },
     {
+      "name": "BookingPayments"
+    },
+    {
       "name": "Packages"
     },
     {
@@ -1991,6 +2625,9 @@
     },
     {
       "name": "Bookings"
+    },
+    {
+      "name": "AccountingSim"
     }
   ]
 }

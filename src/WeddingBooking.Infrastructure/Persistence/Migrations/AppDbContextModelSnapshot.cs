@@ -24,6 +24,51 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("WeddingBooking.Domain.Accounting.AccountingReference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Instalment")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("instalment");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("number");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_accounting_references");
+
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("ix_accounting_references_booking_id");
+
+                    b.HasIndex("BookingId", "Instalment")
+                        .IsUnique()
+                        .HasDatabaseName("ix_accounting_references_booking_id_instalment")
+                        .HasFilter("type = 'Invoice'");
+
+                    b.ToTable("accounting_references", "app");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Bookings.Booking", b =>
                 {
                     b.Property<Guid>("Id")
@@ -51,6 +96,10 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("payment_terms");
+
+                    b.Property<DateTimeOffset?>("SignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_at");
 
                     b.Property<string>("Stage")
                         .IsRequired()
@@ -299,6 +348,11 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AccountingNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("accounting_number");
+
                     b.Property<string>("Address")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -417,6 +471,16 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("users", "app");
                 });
 
+            modelBuilder.Entity("WeddingBooking.Domain.Accounting.AccountingReference", b =>
+                {
+                    b.HasOne("WeddingBooking.Domain.Bookings.Booking", null)
+                        .WithMany("AccountingReferences")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_accounting_references_bookings_booking_id");
+                });
+
             modelBuilder.Entity("WeddingBooking.Domain.Bookings.Booking", b =>
                 {
                     b.HasOne("WeddingBooking.Domain.Customers.Customer", "Customer")
@@ -461,6 +525,8 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WeddingBooking.Domain.Bookings.Booking", b =>
                 {
+                    b.Navigation("AccountingReferences");
+
                     b.Navigation("Lines");
                 });
 

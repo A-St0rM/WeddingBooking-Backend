@@ -27,6 +27,12 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Navigation(booking => booking.Lines).HasField("_lines").AutoInclude();
         builder.Ignore(booking => booking.OrderedLines);
 
+        builder.HasMany(booking => booking.AccountingReferences).WithOne().HasForeignKey(r => r.BookingId).OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(booking => booking.AccountingReferences).HasField("_references").AutoInclude();
+        builder.Ignore(booking => booking.LatestQuote);
+        builder.Ignore(booking => booking.BookedOn);
+        builder.Ignore(booking => booking.SignedOn);
+
         builder.ComplexProperty(booking => booking.Surcharge, surcharge =>
         {
             surcharge.Property(rule => rule.Threshold).HasColumnName("surcharge_threshold");
@@ -47,5 +53,24 @@ internal sealed class BookingLineConfiguration : IEntityTypeConfiguration<Bookin
         LineColumns.Configure(builder);
         builder.Property(line => line.SourcePackageName).HasMaxLength(200);
         builder.Ignore(line => line.Spec);
+    }
+}
+
+internal sealed class AccountingReferenceConfiguration : IEntityTypeConfiguration<WeddingBooking.Domain.Accounting.AccountingReference>
+{
+    public void Configure(EntityTypeBuilder<WeddingBooking.Domain.Accounting.AccountingReference> builder)
+    {
+        builder.ToTable("accounting_references");
+        builder.HasKey(reference => reference.Id);
+        builder.Property(reference => reference.Type).HasConversion<string>().HasMaxLength(20);
+        builder.Property(reference => reference.Instalment).HasConversion<string>().HasMaxLength(30);
+        builder.Property(reference => reference.Number).HasMaxLength(50).IsRequired();
+
+        builder.HasIndex(reference => reference.BookingId);
+
+        // One invoice per instalment per booking, in the database as well as in the domain.
+        builder.HasIndex(reference => new { reference.BookingId, reference.Instalment })
+            .IsUnique()
+            .HasFilter("type = 'Invoice'");
     }
 }

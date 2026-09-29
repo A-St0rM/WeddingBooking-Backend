@@ -13,11 +13,12 @@ public sealed record BookingSummaryResponse(
     Guid CustomerId,
     string CustomerName,
     SalesStage Stage,
+    DisplayStatus Status,
     PaymentTerms PaymentTerms)
 {
-    public static BookingSummaryResponse From(Booking booking) => new(
+    public static BookingSummaryResponse From(Booking booking, DisplayStatus status) => new(
         booking.Id, booking.EventDate, booking.GuestCount, booking.CustomerId, booking.Customer.Name,
-        booking.Stage, booking.PaymentTerms);
+        booking.Stage, status, booking.PaymentTerms);
 }
 
 public sealed record BookingResponse(
@@ -26,6 +27,9 @@ public sealed record BookingResponse(
     int GuestCount,
     PaymentTerms PaymentTerms,
     SalesStage Stage,
+    // The one word staff see, worked out from the stage, the payments and the readiness.
+    DisplayStatus Status,
+    DateTimeOffset? SignedAt,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     // Send back unchanged when saving; a stale value means someone else saved first.

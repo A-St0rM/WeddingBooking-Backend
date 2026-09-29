@@ -40,13 +40,13 @@ public sealed class BookingsController(AppDbContext db, BookingResponder respond
         }
 
         var bookings = await query.OrderBy(booking => booking.EventDate).Take(500).ToListAsync(ct);
-        return bookings.Select(BookingSummaryResponse.From).ToList();
+        return await responder.SummariesAsync(bookings, ct);
     }
 
     /// <summary>Live bookings already on a date — for the warning while a date is being chosen.</summary>
     [HttpGet("on-date")]
     public async Task<IReadOnlyList<BookingSummaryResponse>> OnDate([FromQuery] DateOnly date, [FromQuery] Guid? except, CancellationToken ct) =>
-        (await db.OnDateAsync(date, except, ct)).Select(BookingSummaryResponse.From).ToList();
+        await responder.SummariesAsync(await db.OnDateAsync(date, except, ct), ct);
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<BookingResponse>> Get(Guid id, CancellationToken ct)

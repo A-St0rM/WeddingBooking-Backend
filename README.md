@@ -22,7 +22,26 @@ dotnet ef migrations add <Navn> --project src/WeddingBooking.Infrastructure --st
 dotnet ef migrations script --idempotent --project src/WeddingBooking.Infrastructure --startup-project src/WeddingBooking.Api
 ```
 
-Læs migrationen igennem, før den køres. SQL'en fra `script --idempotent` er den, der anvendes gennem Supabase-connectoren.
+Det simulerede regnskab har sin egen `DbContext` og sine egne migrationer i skemaet `accounting_sim`:
+
+```bash
+dotnet ef migrations add <Navn> --context AccountingSimDbContext --project src/WeddingBooking.Integrations --startup-project src/WeddingBooking.Api --output-dir Accounting/Simulated/Migrations
+dotnet ef migrations script --idempotent --context AccountingSimDbContext --project src/WeddingBooking.Integrations --startup-project src/WeddingBooking.Api
+```
+
+Læs migrationen igennem, før den køres. Kør aldrig `migrations remove` med `--no-build`: den fjerner så den seneste migration i den gamle build, ikke den nye. SQL'en fra `script --idempotent` er den, der anvendes gennem Supabase-connectoren.
+
+## Tests
+
+```bash
+dotnet test tests/WeddingBooking.Domain.Tests
+```
+
+Domænetestene dækker pris, betalingsplan og visningsstatus og kører i pipelinen. Integrationstestene i `WeddingBooking.Api.Tests` kører det rigtige API mod en rigtig Postgres og springes over, medmindre `WB_TEST_POSTGRES` peger på en database, der må slettes — de dropper skemaerne `app` og `accounting_sim` først:
+
+```bash
+WB_TEST_POSTGRES="Host=localhost;Port=5433;Database=weddingbooking;Username=postgres;Password=test" dotnet test tests/WeddingBooking.Api.Tests
+```
 
 ## Kontrakten
 
