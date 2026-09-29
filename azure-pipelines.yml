@@ -1,11 +1,3 @@
-# Deploys the API to App Service on every push to main.
-#
-# Set these pipeline variables once (Pipelines -> Edit -> Variables):
-#   azureServiceConnection   name of the Azure Resource Manager service connection
-#   webAppName               the App Service name, e.g. weddingbooking-api
-#
-# Application settings — the connection string and the rest — live in App
-# Service, not here. Nothing secret belongs in this file.
 
 trigger:
   branches:
