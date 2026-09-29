@@ -11,7 +11,9 @@ public static class PersistenceExtensions
     /// about which engine backs it.
     /// </summary>
     public static IServiceCollection AddPersistence(this IServiceCollection services, string? connectionString) =>
-        services.AddDbContext<AppDbContext>(options => Configure(options, connectionString));
+        services
+            .AddDbContext<AppDbContext>(options => Configure(options, connectionString))
+            .AddScoped<Domain.Files.IFileStore, Files.DatabaseFileStore>();
 
     internal static void Configure(DbContextOptionsBuilder options, string? connectionString) =>
         options

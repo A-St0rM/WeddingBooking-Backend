@@ -21,6 +21,7 @@ public static class IntegrationsExtensions
         services.AddDbContext<AccountingSimDbContext>(options => ConfigureSim(options, connectionString));
         services.AddScoped<IAccountingSystem, SimulatedAccountingSystem>();
         services.AddScoped<SimulatedAccountingAdmin>();
+        services.AddSingleton<Domain.Agreements.IAgreementRenderer, Agreements.QuestPdfAgreementRenderer>();
 
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         return services;

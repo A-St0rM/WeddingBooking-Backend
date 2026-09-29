@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WeddingBooking.Domain.Agreements;
 using WeddingBooking.Domain.Bookings;
 using WeddingBooking.Domain.Catalogue;
 using WeddingBooking.Domain.Pricing;
@@ -21,6 +22,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<PricingSettings> PricingSettings => Set<PricingSettings>();
+    public DbSet<AgreementVersion> AgreementVersions => Set<AgreementVersion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
