@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WeddingBooking.Domain.Common;
 
 namespace WeddingBooking.Api.Middleware;
@@ -14,7 +15,8 @@ namespace WeddingBooking.Api.Middleware;
 /// the response CORS has already prepared.
 ///
 /// <para>A <see cref="DomainException"/> is a business rule saying no, and
-/// becomes a 400 carrying the rule's own message. Anything else is logged with a
+/// becomes a 400 carrying the rule's own message. A concurrency conflict — two
+    /// people saving the same booking — is a 409. Anything else is logged with a
 /// trace id and returned as a 500 without the exception text, which can carry
 /// connection strings.</para>
 /// </remarks>
@@ -29,6 +31,11 @@ public sealed class UnhandledExceptionMiddleware(RequestDelegate next, ILogger<U
         catch (DomainException refusal) when (!context.Response.HasStarted)
         {
             await WriteAsync(context, StatusCodes.Status400BadRequest, "Kan ikke gennemføres", refusal.Message);
+        }
+        catch (DbUpdateConcurrencyException) when (!context.Response.HasStarted)
+        {
+            await WriteAsync(context, StatusCodes.Status409Conflict, "Ændret af en anden",
+                "En anden har gemt en ændring imens. Hent den nyeste udgave, og ret igen.");
         }
         catch (Exception exception) when (!context.Response.HasStarted && !context.RequestAborted.IsCancellationRequested)
         {
