@@ -564,6 +564,129 @@
         }
       }
     },
+    "/api/public/viewing-times": {
+      "get": {
+        "tags": [
+          "PublicRequests"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FreeTimeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/wedding-dates": {
+      "get": {
+        "tags": [
+          "PublicRequests"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/requests/viewing": {
+      "post": {
+        "tags": [
+          "PublicRequests"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/requests/wedding": {
+      "post": {
+        "tags": [
+          "PublicRequests"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeddingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeddingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeddingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bookings/{id}/payments": {
       "get": {
         "tags": [
@@ -2431,6 +2554,86 @@
         }
       }
     },
+    "/api/bookings/{id}/request/accept": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/request/decline": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bookings/{id}/agreement": {
       "get": {
         "tags": [
@@ -3057,6 +3260,13 @@
           }
         }
       },
+      "BookingOrigin": {
+        "enum": [
+          "Staff",
+          "Website",
+          "Trello"
+        ]
+      },
       "BookingResponse": {
         "required": [
           "id",
@@ -3064,6 +3274,7 @@
           "guestCount",
           "paymentTerms",
           "stage",
+          "origin",
           "status",
           "signedAt",
           "viewingAt",
@@ -3095,6 +3306,9 @@
           },
           "stage": {
             "$ref": "#/components/schemas/SalesStage"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/BookingOrigin"
           },
           "status": {
             "$ref": "#/components/schemas/DisplayStatus"
@@ -3688,8 +3902,23 @@
           "Saturday"
         ]
       },
+      "DeclineRequest": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "DisplayStatus": {
         "enum": [
+          "Requested",
           "Inquiry",
           "Viewing",
           "QuoteSent",
@@ -3820,6 +4049,23 @@
           },
           "enableRangeProcessing": {
             "type": "boolean"
+          }
+        }
+      },
+      "FreeTimeResponse": {
+        "required": [
+          "start",
+          "end"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -4563,6 +4809,29 @@
           "Other"
         ]
       },
+      "PublicPerson": {
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
       "ReadinessCategory": {
         "enum": [
           "Contact",
@@ -4656,6 +4925,30 @@
           "Done"
         ]
       },
+      "ReceiptResponse": {
+        "required": [
+          "reference",
+          "eventDate",
+          "viewingAt"
+        ],
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "viewingAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "RegisterPaymentRequest": {
         "required": [
           "amount",
@@ -4687,6 +4980,7 @@
       },
       "SalesStage": {
         "enum": [
+          "Requested",
           "Inquiry",
           "Viewing",
           "QuoteSent",
@@ -5127,6 +5421,81 @@
           }
         }
       },
+      "ViewingRequest": {
+        "required": [
+          "people",
+          "start",
+          "wishedDate",
+          "guestCount",
+          "consent",
+          "website"
+        ],
+        "type": "object",
+        "properties": {
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPerson"
+            }
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "wishedDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "guestCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "consent": {
+            "type": "boolean"
+          },
+          "website": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "WeddingRequest": {
+        "required": [
+          "people",
+          "eventDate",
+          "guestCount",
+          "consent",
+          "website"
+        ],
+        "type": "object",
+        "properties": {
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPerson"
+            }
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "guestCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "consent": {
+            "type": "boolean"
+          },
+          "website": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "WindowDto": {
         "required": [
           "day",
@@ -5183,6 +5552,9 @@
     },
     {
       "name": "Readiness"
+    },
+    {
+      "name": "PublicRequests"
     },
     {
       "name": "BookingPayments"

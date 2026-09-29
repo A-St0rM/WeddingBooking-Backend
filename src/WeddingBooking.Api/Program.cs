@@ -18,6 +18,7 @@ builder.Services.AddPersistence(builder.Configuration.GetConnectionString("Postg
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Bookings.BookingResponder>();
 builder.Services.AddScoped<WeddingBooking.Api.Features.Payments.BookingFinance>();
+builder.Services.AddScoped<WeddingBooking.Api.Features.Calendar.FreeTime>();
 builder.Services.AddIntegrations(builder.Configuration);
 builder.Services.Configure<WeddingBooking.Api.Features.Summaries.SummaryOptions>(builder.Configuration.GetSection("Summary"));
 
@@ -30,6 +31,11 @@ builder.Services.AddRateLimiter(options =>
         System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+    // The public request forms: loading free times and dates and sending a request, per address.
+    options.AddPolicy(WeddingBooking.Api.Features.Public.PublicRequestsController.PublicPolicy, context =>
+        System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1) }));
 });
 
 builder.Services

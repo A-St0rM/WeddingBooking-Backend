@@ -27,6 +27,7 @@ public sealed record BookingResponse(
     int GuestCount,
     PaymentTerms PaymentTerms,
     SalesStage Stage,
+    BookingOrigin Origin,
     // The one word staff see, worked out from the stage, the payments and the readiness.
     DisplayStatus Status,
     DateTimeOffset? SignedAt,
@@ -82,5 +83,7 @@ public sealed record UpdateBookingRequest(
 public sealed record ChangeStageRequest(SalesStage Stage);
 
 public sealed record ViewingHostResponse(Guid Id, string Name, string? Phone);
+
+public sealed record DeclineRequest([System.ComponentModel.DataAnnotations.MaxLength(2000)] string? Reason);
 
 public sealed record ScheduleViewingRequest(DateTimeOffset? At, Guid? HostId);

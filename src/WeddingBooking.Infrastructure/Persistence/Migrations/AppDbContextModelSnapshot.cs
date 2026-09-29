@@ -156,6 +156,12 @@ namespace WeddingBooking.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("guest_count");
 
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("origin");
+
                     b.Property<string>("PaymentTerms")
                         .IsRequired()
                         .HasMaxLength(10)
