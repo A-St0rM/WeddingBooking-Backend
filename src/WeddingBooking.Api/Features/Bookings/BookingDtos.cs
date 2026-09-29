@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using WeddingBooking.Api.Features.Customers;
+using WeddingBooking.Api.Features.Packages;
 using WeddingBooking.Domain.Bookings;
+using WeddingBooking.Domain.Catalogue;
 
 namespace WeddingBooking.Api.Features.Bookings;
 
@@ -29,8 +31,33 @@ public sealed record BookingResponse(
     // Send back unchanged when saving; a stale value means someone else saved first.
     uint Version,
     CustomerResponse Customer,
+    // What was agreed, without prices — the kitchen reads the menu from here.
+    IReadOnlyList<BookingLineResponse> Lines,
+    // Worked out on every read. Null for the roles that do not see prices.
+    PriceResponse? Price,
     // Other live bookings on the same date. A warning, never a block.
     IReadOnlyList<BookingSummaryResponse> SameDateBookings);
+
+public sealed record BookingLineResponse(
+    Guid Id,
+    string Description,
+    ProductGroup Group,
+    LinePricing Pricing,
+    int Quantity,
+    int? MinimumQuantity,
+    string? SourcePackageName)
+{
+    public static BookingLineResponse From(BookingLine line) => new(
+        line.Id, line.Description, line.Group, line.Pricing, line.Quantity, line.MinimumQuantity, line.SourcePackageName);
+}
+
+public sealed record PricedLineResponse(Guid LineId, decimal UnitPrice, int Units, decimal Total);
+
+public sealed record SurchargeResponse(int Threshold, decimal Amount, bool Applies);
+
+public sealed record PriceResponse(IReadOnlyList<PricedLineResponse> Lines, decimal Subtotal, SurchargeResponse Surcharge, decimal Total);
+
+public sealed record AddPackageRequest(Guid PackageId);
 
 public sealed record CreateBookingRequest(
     // An existing customer. Leave empty and give CustomerName to create one.
