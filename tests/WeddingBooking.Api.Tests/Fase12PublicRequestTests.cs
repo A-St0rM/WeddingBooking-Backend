@@ -84,7 +84,7 @@ public sealed class Fase12PublicRequestTests(ApiFactory api)
         Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
 
         var booking = (await Manager.GetJsonAsync("/api/bookings?search=dato og par")).AsArray().Single()!;
-        await Manager.PostJsonAsync($"/api/bookings/{booking["id"].Str()}/request/decline", new { reason = "Vi har et andet arrangement." });
+        await Manager.PostJsonAsync($"/api/bookings/{booking["id"].Str()}/decline", new { reason = "Vi har et andet arrangement." });
         Assert.Contains((await Anonymous.GetJsonAsync("/api/public/wedding-dates")).AsArray(), d => d.Str() == date);
     }
 

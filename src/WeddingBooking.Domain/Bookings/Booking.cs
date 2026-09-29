@@ -35,6 +35,9 @@ public sealed class Booking
 
     public BookingOrigin Origin { get; private set; }
 
+    /// <summary>A viewing until the couple says yes; then a wedding — the same row, customer and history.</summary>
+    public BookingKind Kind { get; private set; } = BookingKind.Wedding;
+
     public IReadOnlyList<BookingLine> Lines => _lines;
 
     public IReadOnlyList<ReadinessItem> ReadinessItems => _readiness;
@@ -82,6 +85,7 @@ public sealed class Booking
         booking.Origin = BookingOrigin.Website;
         booking.ViewingAt = viewingAt?.ToUniversalTime();
         booking.ViewingHostId = hostId;
+        booking.Kind = viewingAt is null ? BookingKind.Wedding : BookingKind.Viewing;
         return booking;
     }
 
@@ -97,10 +101,28 @@ public sealed class Booking
         Touch();
     }
 
-    /// <summary>Says no to the request. The time or date is freed.</summary>
-    public void DeclineRequest()
+    /// <summary>
+    /// The couple said yes: the viewing — or a date request from the website — becomes a wedding on the
+    /// same row. The date, guests and terms are set now, and one of the two is chosen to pay.
+    /// </summary>
+    public void ConfirmAsWedding(DateOnly eventDate, int guestCount, PaymentTerms terms, Guid payerId)
     {
-        if (Stage != SalesStage.Requested) throw new DomainException("Bookingen er ikke en ny bestilling.");
+        if (Stage.IsClosed()) throw new DomainException("En afbestilt eller tabt sag kan ikke bekræftes.");
+        if (Kind != BookingKind.Viewing && Stage != SalesStage.Requested) throw new DomainException("Sagen er allerede en booking.");
+
+        Change(eventDate, guestCount, terms);
+        Customer.MakePayer(payerId);
+        Kind = BookingKind.Wedding;
+        Stage = SalesStage.Inquiry;
+    }
+
+    /// <summary>A request or a viewing the couple — or the estate — said no to. Its time or date is freed.</summary>
+    public void Decline()
+    {
+        if (Stage != SalesStage.Requested && (Kind != BookingKind.Viewing || Stage.IsClosed()))
+        {
+            throw new DomainException("Kun en ny bestilling eller en fremvisning kan afvises her.");
+        }
         Stage = SalesStage.Lost;
         Touch();
     }
