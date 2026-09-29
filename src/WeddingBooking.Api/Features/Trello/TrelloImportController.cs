@@ -54,7 +54,7 @@ public sealed class TrelloImportController(AppDbContext db, ITrelloGateway trell
     private const long MaxExportBytes = 50 * 1024 * 1024;
 
     [HttpGet("status")]
-    public TrelloStatusResponse Status() => new(trello.IsConfigured);
+    public TrelloStatusResponse Status() => new(trello.HasKey);
 
     /// <summary>What an import would do. Nothing is saved.</summary>
     [HttpPost("preview"), RequestSizeLimit(MaxExportBytes)]

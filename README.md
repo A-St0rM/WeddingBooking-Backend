@@ -60,6 +60,7 @@ Et build skriver OpenAPI-beskrivelsen til `src/WeddingBooking.Api/WeddingBooking
 | `OpenAI__ApiKey` | Valgfri. Uden den bruger AI-resuméet den faste adapter. |
 | `OpenAI__Model` | Valgfri, standard `gpt-4.1-mini`. |
 | `Summary__StandaloneEnabled` | `true` (standard) åbner `/api/summary/standalone` uden login, rate-begrænset. `false` lukker det. |
-| `Trello__ApiKey`, `Trello__Token` | Valgfri. Uden dem importeres fra bordets JSON-eksport. |
+| `Trello__BoardIds__0`, `__1`, … | Id på de Trello-boards, der vises under *Trello* (fx Bryllup 26, 27, 28). |
+| `Trello__ApiKey`, `Trello__Token` | Valgfri til at læse offentlige boards. Kræves for private boards og for at skrive til Trello (fase 15). |
 
 Health check: `/health`.

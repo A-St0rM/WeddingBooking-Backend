@@ -23,8 +23,10 @@ public static class TrelloJson
 
         if (root?["cards"] is not JsonArray cards) throw new FormatException("Filen ligner ikke en Trello-eksport: der er ingen kort.");
 
-        var lists = (root["lists"] as JsonArray ?? []).OfType<JsonObject>()
-            .ToDictionary(l => Str(l, "id"), l => Str(l, "name"));
+        var boardLists = (root["lists"] as JsonArray ?? []).OfType<JsonObject>()
+            .Select(l => new TrelloList(Str(l, "id"), Str(l, "name"), Num(l, "pos"), Bool(l, "closed")))
+            .ToList();
+        var lists = boardLists.ToDictionary(l => l.Id, l => l.Name);
         var fieldNames = (root["customFields"] as JsonArray ?? []).OfType<JsonObject>()
             .ToDictionary(f => Str(f, "id"), f => Str(f, "name"));
         var checklistsByCard = (root["checklists"] as JsonArray ?? []).OfType<JsonObject>()
@@ -56,10 +58,14 @@ public static class TrelloJson
                 card["closed"]?.GetValue<bool>() ?? false,
                 (card["labels"] as JsonArray ?? []).OfType<JsonObject>().Select(l => new TrelloLabel(Str(l, "name"), Str(l, "color"))).ToList(),
                 checklists,
-                fields);
+                fields,
+                Str(card, "idList"),
+                Num(card, "pos"),
+                card["shortUrl"]?.ToString() ?? card["url"]?.ToString(),
+                Bool(card, "dueComplete"));
         }).ToList();
 
-        return new TrelloBoard(Str(root, "id"), Str(root, "name"), parsed);
+        return new TrelloBoard(Str(root, "id"), Str(root, "name"), parsed, boardLists, root["shortUrl"]?.ToString() ?? root["url"]?.ToString());
     }
 
     private static TrelloChecklist Checklist(JsonObject checklist) => new(
@@ -68,4 +74,9 @@ public static class TrelloJson
             .Select(i => new TrelloCheckItem(Str(i, "name"), Str(i, "state") == "complete")).ToList());
 
     private static string Str(JsonNode node, string key) => node[key]?.ToString() ?? "";
+
+    private static double Num(JsonNode node, string key) =>
+        double.TryParse(node[key]?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var n) ? n : 0;
+
+    private static bool Bool(JsonNode node, string key) => node[key] is JsonValue v && v.TryGetValue<bool>(out var b) && b;
 }
