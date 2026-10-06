@@ -14,6 +14,8 @@ public sealed class TrelloCardInterpreterTests
     [InlineData("Tobias & Cecilie 80 pax 12.06.2027", "Tobias og Cecilie", "2027-06-12")]
     [InlineData("Sofie og Magnus - 55 gæster - 19. juni", "Sofie og Magnus", "2027-06-19")]
     [InlineData("Emma + Oliver 14/8 120 pax", "Emma og Oliver", "2027-08-14")]
+    // The name the system gives the cards it creates itself.
+    [InlineData("Tobias & Cecilie · 80 pax 12.06.2027", "Tobias og Cecilie", "2027-06-12")]
     public void Reads_couple_date_and_guests_from_the_name(string name, string? couple, string? date)
     {
         var reading = TrelloCardInterpreter.Read(Card(name), 2027);

@@ -156,7 +156,7 @@ public static partial class TrelloCardInterpreter
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();
 
-    [GeneratedRegex(@"(?:^|\s)[-–,:]+(?=\s|$)")]
+    [GeneratedRegex(@"(?:^|\s)[-–,:·]+(?=\s|$)")]
     private static partial Regex LooseSeparators();
 
     [GeneratedRegex(@"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", RegexOptions.IgnoreCase)]

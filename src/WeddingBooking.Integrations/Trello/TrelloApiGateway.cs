@@ -30,12 +30,12 @@ internal sealed class TrelloApiGateway(HttpClient http, IOptions<TrelloOptions> 
 
     public async Task<TrelloBoard> GetBoardAsync(string boardId, CancellationToken ct)
     {
+        // The REST address reads a public board without a key, by its long id. The open
+        // trello.com/b/{id}.json only knows the short link, and answers the long id with a web page.
         var id = Uri.EscapeDataString(boardId);
-        var url = HasKey
-            ? $"https://api.trello.com/1/boards/{id}?" + string.Join("&",
-                "lists=all", "cards=all", "card_fields=all", "checklists=all", "customFields=true", "card_customFieldItems=true",
-                $"key={Uri.EscapeDataString(options.Value.ApiKey!)}", $"token={Uri.EscapeDataString(options.Value.Token!)}")
-            : $"https://trello.com/b/{id}.json";
+        var url = $"https://api.trello.com/1/boards/{id}?" + string.Join("&",
+            "lists=all", "cards=all", "card_fields=all", "checklists=all", "customFields=true", "card_customFieldItems=true");
+        if (HasKey) url += $"&key={Uri.EscapeDataString(options.Value.ApiKey!)}&token={Uri.EscapeDataString(options.Value.Token!)}";
         using var response = await http.GetAsync(url, ct);
         if (!response.IsSuccessStatusCode)
         {
