@@ -48,10 +48,11 @@ public sealed class AvailableTimeTests
     }
 
     [Fact]
-    public void Wedding_dates_are_saturdays_in_the_season_that_nobody_has_secured()
+    public void Wedding_dates_are_weekend_days_in_the_season_that_nobody_has_secured()
     {
         var dates = AvailableTime.WeddingDates(new(2027, 6, 20), new(2027, 8, 10), new HashSet<DateOnly> { new(2027, 8, 7) }).ToList();
 
-        Assert.Equal([new DateOnly(2027, 6, 26)], dates); // July is closed, 7 August is taken
+        // Saturdays and Sundays. July is closed, Saturday 7 August is taken.
+        Assert.Equal([new DateOnly(2027, 6, 20), new(2027, 6, 26), new(2027, 6, 27), new(2027, 8, 1), new(2027, 8, 8)], dates);
     }
 }

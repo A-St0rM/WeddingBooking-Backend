@@ -85,12 +85,12 @@ public static class AvailableTime
         return free;
     }
 
-    /// <summary>Saturdays in the season between two dates that no secured booking holds (§11.14).</summary>
+    /// <summary>Weekend days in the season between two dates that no secured booking holds (§11.14).</summary>
     public static IEnumerable<DateOnly> WeddingDates(DateOnly from, DateOnly to, IReadOnlySet<DateOnly> secured)
     {
         for (var day = from; day <= to; day = day.AddDays(1))
         {
-            if (day.DayOfWeek == DayOfWeek.Saturday && InSeason(day) && !secured.Contains(day)) yield return day;
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday && InSeason(day) && !secured.Contains(day)) yield return day;
         }
     }
 }
