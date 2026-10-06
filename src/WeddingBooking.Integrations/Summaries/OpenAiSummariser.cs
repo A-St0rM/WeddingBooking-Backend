@@ -9,7 +9,7 @@ namespace WeddingBooking.Integrations.Summaries;
 public sealed class OpenAiOptions
 {
     public string? ApiKey { get; set; }
-    public string Model { get; set; } = "gpt-4.1-mini";
+    public string Model { get; set; } = "gpt-5-mini";
     public string BaseUrl { get; set; } = "https://api.openai.com/v1";
 }
 
@@ -56,8 +56,8 @@ internal sealed class OpenAiSummariser(HttpClient http, IOptions<OpenAiOptions> 
 
         var request = new JsonObject
         {
+            // No temperature: the GPT-5 models accept only the default and answer 400 to anything else.
             ["model"] = options.Value.Model,
-            ["temperature"] = 0.2,
             ["messages"] = new JsonArray
             {
                 new JsonObject { ["role"] = "system", ["content"] = Instructions },

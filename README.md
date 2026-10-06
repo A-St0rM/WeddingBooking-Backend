@@ -58,7 +58,7 @@ Et build skriver OpenAPI-beskrivelsen til `src/WeddingBooking.Api/WeddingBooking
 | `Cors__AllowedOrigins__0` | Static Web App'ens adresse, fx `https://icy-dune-06a4f8103.4.azurestaticapps.net` |
 | `Access__BootstrapAdminEmails__0` | E-mailen på den første event manager |
 | `OpenAI__ApiKey` | Valgfri. Uden den bruger AI-resuméet den faste adapter. |
-| `OpenAI__Model` | Valgfri, standard `gpt-4.1-mini`. |
+| `OpenAI__Model` | Valgfri, standard `gpt-5-mini`. |
 | `Summary__StandaloneEnabled` | `true` (standard) åbner `/api/summary/standalone` uden login, rate-begrænset. `false` lukker det. |
 | `Trello__BoardIds__0`, `__1`, … | Id på de Trello-boards, der vises under *Trello* (fx Bryllup 26, 27, 28). |
 | `Trello__ApiKey`, `Trello__Token` | Valgfri til at læse offentlige boards. Kræves for private boards og for at skrive til Trello (fase 15). |
