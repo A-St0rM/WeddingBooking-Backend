@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/WeddingBooking.Api", "--launch-profile", "http"],
+      "port": 5055
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "../WeddingBooking-Frontend", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}

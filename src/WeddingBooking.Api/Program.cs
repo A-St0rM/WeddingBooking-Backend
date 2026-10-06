@@ -24,6 +24,7 @@ builder.Services.AddScoped<WeddingBooking.Api.Features.Trello.TrelloSync>();
 builder.Services.AddHostedService<WeddingBooking.Api.Features.Trello.TrelloReconciler>();
 builder.Services.AddIntegrations(builder.Configuration);
 builder.Services.Configure<WeddingBooking.Api.Features.Summaries.SummaryOptions>(builder.Configuration.GetSection("Summary"));
+builder.Services.AddScoped<WeddingBooking.Api.Features.Demo.DemoSeeder>();
 
 // The standalone summary page is open without login. A few calls a minute per
 // address is plenty for a person and useless for anyone draining the OpenAI account.
@@ -99,6 +100,13 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 var app = builder.Build();
+
+// `dotnet run -- seed-demo` fills the database with the demo couples and exits.
+if (args.Contains("seed-demo"))
+{
+    await WeddingBooking.Api.Features.Demo.DemoSeeder.RunAsync(app.Services);
+    return;
+}
 
 // The order is load-bearing; see CLAUDE.md.
 app.UseForwardedHeaders();
